@@ -1,0 +1,313 @@
+/* --- Root Variables for Theming --- */
+:root {
+    /* Light Theme (Base) */
+    --bg-color: #f0f0f0;
+    --fg-color: #333333;
+    --entry-bg: #ffffff;
+    --button-bg: #cccccc;
+    --accent-color: #3498db; /* Blue for Light Theme */
+    --error-color: #e74c3c;
+    --warning-color: #f39c12;
+    --info-color: #3498db;
+    --select-bg: #a0a0a0;
+    --container-bg: #ffffff;
+    --border-color: #ccc;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+/* --- Dark Theme Variables --- */
+body.dark-mode {
+    --bg-color: #1e1e1e;
+    --fg-color: #ffffff;
+    --entry-bg: #3c3c3c;
+    --button-bg: #505050;
+    --accent-color: #2ecc71; /* Green for Dark Theme */
+    --error-color: #c0392b;
+    --warning-color: #f1c40f;
+    --info-color: #2ecc71;
+    --select-bg: #5a5a5a;
+    --container-bg: #2d2d30;
+    --border-color: #444;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+/* --- Global Reset and Setup --- */
+body {
+    font-family: Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--fg-color);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.container {
+    width: 100%;
+    max-width: 900px;
+    background-color: var(--container-bg);
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+/* Updated H1/Subtitle Styling */
+h1 {
+    color: var(--accent-color);
+    text-align: center;
+    margin-top: 0;
+    padding-bottom: 5px; /* Reduced space above subtitle */
+}
+
+.subtitle {
+    /* Ensure subtitle is explicitly centered */
+    text-align: center; 
+    font-size: 1.1em;
+    font-weight: normal;
+    margin-top: 0;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 15px;
+    color: var(--fg-color);
+    transition: color 0.3s, border-color 0.3s;
+}
+
+/* --- Header Controls (Dark Mode/Info Buttons) --- */
+.header-controls {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.control-button {
+    padding: 8px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9em;
+    background-color: var(--button-bg);
+    color: var(--fg-color);
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.control-button:hover {
+    background-color: var(--select-bg);
+}
+
+/* --- Input Grid --- */
+.input-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px 30px;
+    margin-bottom: 20px;
+}
+
+.input-grid label {
+    font-weight: bold;
+    align-self: center;
+    text-align: right;
+    padding-right: 10px;
+}
+
+.input-grid input[type="number"],
+.input-grid input[type="text"] {
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 1em;
+    background-color: var(--entry-bg);
+    color: var(--fg-color);
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+/* --- Options Bar --- */
+.options-bar {
+    display: flex;
+    justify-content: flex-start;
+    gap: 30px;
+    margin-bottom: 20px;
+    padding: 10px 0;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.options-bar label {
+    font-size: 0.9em;
+    cursor: pointer;
+}
+
+/* --- Action Button Bar --- */
+.button-bar {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.button-bar button {
+    padding: 12px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9em;
+    flex-grow: 1;
+    background-color: var(--button-bg);
+    color: var(--fg-color);
+    transition: background-color 0.2s, color 0.2s;
+}
+
+#btn-create {
+    background-color: var(--accent-color);
+    color: white;
+}
+/* Use color-mix for a slightly darker hover accent color */
+#btn-create:hover:not(:disabled) {
+    background-color: color-mix(in srgb, var(--accent-color) 80%, black);
+}
+
+/* Styling for the Clear button and others */
+#btn-clear, #btn-evaluate, #btn-copy-selected, #btn-copy-all {
+    background-color: var(--button-bg);
+    color: var(--fg-color);
+}
+#btn-clear:hover:not(:disabled),
+#btn-evaluate:hover:not(:disabled), 
+#btn-copy-selected:hover:not(:disabled),
+#btn-copy-all:hover:not(:disabled) {
+    background-color: var(--select-bg);
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* --- Output Area --- */
+.output-area label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+}
+
+#passwords-select {
+    width: 100%;
+    min-height: 200px;
+    font-family: "Consolas", monospace;
+    font-size: 1.1em;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--entry-bg);
+    color: var(--fg-color);
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+/* Style for selected options */
+#passwords-select option:checked {
+    background-color: var(--select-bg);
+    color: var(--fg-color);
+}
+
+/* --- Message Area --- */
+.message-area {
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Use color-mix for subtle background variations in light mode */
+.message-area.error { background-color: color-mix(in srgb, var(--error-color) 10%, white); color: var(--error-color); border: 1px solid var(--error-color); }
+.message-area.warning { background-color: color-mix(in srgb, var(--warning-color) 10%, white); color: var(--warning-color); border: 1px solid var(--warning-color); }
+.message-area.info { background-color: color-mix(in srgb, var(--info-color) 10%, white); color: var(--info-color); border: 1px solid var(--info-color); }
+
+.message-area.hidden { display: none; }
+
+/* Dark mode adjustments for messages (use darker mixing color) */
+body.dark-mode .message-area.error { background-color: color-mix(in srgb, var(--error-color) 20%, black); color: var(--error-color); }
+body.dark-mode .message-area.warning { background-color: color-mix(in srgb, var(--warning-color) 20%, black); color: var(--warning-color); }
+body.dark-mode .message-area.info { background-color: color-mix(in srgb, var(--info-color) 20%, black); color: var(--info-color); }
+
+/* --- Modal Styles (For Info Popup) --- */
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.hidden { display: none; }
+
+.modal-content {
+    background-color: var(--container-bg);
+    color: var(--fg-color);
+    padding: 30px;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 600px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+    position: relative;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.modal-content h2 {
+    color: var(--accent-color);
+    margin-top: 0;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+#info-text {
+    white-space: pre-wrap; /* Keeps line breaks from the JS string */
+    padding: 10px 0;
+    font-size: 0.95em;
+    line-height: 1.6;
+}
+
+.close-button {
+    color: var(--fg-color);
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: var(--error-color);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-close-button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background-color: var(--button-bg);
+    color: var(--fg-color);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    float: right;
+}
+.modal-close-button:hover {
+    background-color: var(--select-bg);
+}
