@@ -224,22 +224,52 @@ function toggleDarkMode() {
     ui.body.classList.toggle('dark-mode');
 }
 
-function resetFieldsHandler() {
-    // Clear all input fields (setting them to "" means getEntryValueFromText will use defaults)
-    ui.length.value = ""; 
-    ui.punctuation.value = "";
-    ui.digits.value = "";
-    ui.capitals.value = "";
-    ui.specificWord.value = "";
-    ui.numPasswords.value = "";
+// Helper to check if inputs are completely blank/default
+function areInputsBlank() {
+    return ui.length.value.trim() === "" &&
+           ui.punctuation.value.trim() === "" &&
+           ui.digits.value.trim() === "" &&
+           ui.capitals.value.trim() === "" &&
+           ui.specificWord.value.trim() === "" &&
+           ui.numPasswords.value.trim() === "" &&
+           !ui.disambiguate.checked &&
+           !ui.simplePunc.checked;
+}
 
-    // Reset checkboxes
-    ui.disambiguate.checked = false;
-    ui.simplePunc.checked = false;
-    
-    // Clear passwords list and messages
-    updatePasswordList([]);
-    ui.messageArea.classList.add('hidden');
+function resetFieldsHandler() {
+    const inputsAreBlank = areInputsBlank();
+
+    if (inputsAreBlank) {
+        // State 2: Load defaults
+        ui.length.value = FACTORY_DEFAULTS.length;
+        ui.punctuation.value = FACTORY_DEFAULTS.punctuation;
+        ui.digits.value = FACTORY_DEFAULTS.digits;
+        ui.capitals.value = FACTORY_DEFAULTS.capitals;
+        ui.specificWord.value = FACTORY_DEFAULTS.specific_word;
+        ui.numPasswords.value = FACTORY_DEFAULTS.num_passwords;
+        
+        ui.disambiguate.checked = false;
+        ui.simplePunc.checked = false;
+
+        updatePasswordList([]);
+        showMessage('Default settings loaded.', 'info');
+    } else {
+        // State 1: Clear all fields (set to blank)
+        ui.length.value = ""; 
+        ui.punctuation.value = "";
+        ui.digits.value = "";
+        ui.capitals.value = "";
+        ui.specificWord.value = "";
+        ui.numPasswords.value = "";
+
+        // Reset checkboxes
+        ui.disambiguate.checked = false;
+        ui.simplePunc.checked = false;
+        
+        // Clear passwords list and messages
+        updatePasswordList([]);
+        showMessage('All fields and generated passwords cleared.', 'info');
+    }
 }
 
 function showInfoHandler() {
@@ -261,7 +291,7 @@ function showInfoHandler() {
         "• Evaluate Strength: Select a password and click to see an estimated strength score (in bits of entropy).\n" +
         "• Disambiguate: Avoids confusing characters (I, l, 1, 0, O, o).\n" +
         "• Simple Punctuation: Uses only ! ? . _ @ instead of the full set of symbols.\n" +
-        "• Clear All Fields: Blanks all input values and checkboxes."; 
+        "• Reset Fields: Clears all input values and checkboxes. If pressed again when fields are empty, it loads the default numbers and clears the password list."; 
 
     ui.infoText.textContent = infoContent;
     ui.infoModal.classList.remove('hidden');
@@ -357,6 +387,12 @@ function copyToClipboardHandler(copySelected) {
             return;
         }
         textToCopy = selectedOptions.map(opt => opt.value).join('\n');
+        // NEW: Info message for copying selected
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            showMessage('Selected password(s) copied to clipboard.', 'info');
+        }).catch(err => {
+            showMessage('Failed to copy text. Check browser permissions.', 'error');
+        });
     } else {
         const allOptions = Array.from(ui.passwordsSelect.options);
         if (allOptions.length === 0) {
@@ -364,13 +400,15 @@ function copyToClipboardHandler(copySelected) {
             return;
         }
         textToCopy = allOptions.map(opt => opt.value).join('\n');
+        // NEW: Info message for copying all
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            showMessage('All passwords copied to clipboard.', 'info');
+        }).catch(err => {
+            showMessage('Failed to copy text. Check browser permissions.', 'error');
+        });
     }
 
-    navigator.clipboard.writeText(textToCopy).then(() => {
-        // You might want a success message here too, e.g., showMessage('Password(s) copied!', 'info');
-    }).catch(err => {
-        showMessage('Failed to copy text. Check browser permissions.', 'error');
-    });
+    
 }
 
 // --- EVENT LISTENERS ---

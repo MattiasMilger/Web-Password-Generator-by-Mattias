@@ -126,6 +126,34 @@ h1 {
     transition: background-color 0.3s, color 0.3s, border-color 0.3s;
 }
 
+/* NEW: Theming for Number Input Spinners */
+.input-grid input[type="number"]::-webkit-inner-spin-button,
+.input-grid input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0; /* Remove default margin */
+    /* Custom styling */
+    width: 25px; 
+    height: 100%;
+    background-color: var(--button-bg);
+    color: var(--fg-color);
+    cursor: pointer;
+    opacity: 1; /* Ensure they are visible */
+    border-left: 1px solid var(--border-color); /* Separator line */
+    transition: background-color 0.2s, color 0.2s;
+}
+
+/* Style the up/down buttons more explicitly */
+.input-grid input[type="number"]::-webkit-inner-spin-button {
+    height: 50%; /* Make each button half the height */
+    padding: 0;
+}
+.input-grid input[type="number"]::-webkit-outer-spin-button {
+    height: 50%; /* Make each button half the height */
+    padding: 0;
+}
+/* End of NEW CSS for Spinners */
+
+
 /* --- Options Bar --- */
 .options-bar {
     display: flex;
