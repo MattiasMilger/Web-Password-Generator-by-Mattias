@@ -10,6 +10,16 @@
     <div class="container">
         <h1>Web Password Generator</h1>
         <h2 class="subtitle">by Mattias</h2>
+
+        <div id="info-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <h2>Help & Info</h2>
+                <div id="info-text"></div>
+                <button class="modal-close-button">Close</button>
+            </div>
+        </div>
+
         <div class="header-controls">
             <button id="btn-toggle-theme" class="control-button">Toggle Dark/Light Mode</button>
             <button id="btn-show-info" class="control-button">Info</button>
@@ -58,15 +68,6 @@
             <label>Generated Passwords:</label>
             <select id="passwords-select" size="10" multiple>
                 </select>
-        </div>
-    </div>
-
-    <div id="info-modal" class="modal hidden">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>Help & Info</h2>
-            <div id="info-text"></div>
-            <button class="modal-close-button">Close</button>
         </div>
     </div>
 

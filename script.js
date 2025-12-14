@@ -251,6 +251,11 @@ function showInfoHandler() {
         `• Punctuation: ${FACTORY_DEFAULTS.punctuation}\n` +
         `• Number of Passwords: ${FACTORY_DEFAULTS.num_passwords}\n` +
         "\n" +
+        "Maximum Limits:\n" + 
+        `• Max Password Length: ${MAX_PASSWORD_LENGTH}\n` +
+        `• Max Number of Passwords: ${MAX_PASSWORDS}\n` +
+        `• Max Specific Word Length: ${MAX_SPECIFIC_WORD_LENGTH}\n` +
+        "\n" +
         "Field Explanations:\n" +
         "• Specific Word: Inserts the specified word or phrase randomly somewhere into the generated password.\n" +
         "• Evaluate Strength: Select a password and click to see an estimated strength score (in bits of entropy).\n" +
@@ -336,7 +341,10 @@ function evaluateSelectedPasswordHandler() {
     const password = selectedOptions[0].value;
     const { entropy, rating } = evaluateStrength(password);
 
-    alert(`Password Strength Evaluation:\n\nPassword: ${password}\nRating: ${rating}\nEntropy (bits): ${entropy}`);
+    // Updated: Display strength in the message area (info type) and removed the password itself.
+    const evaluationMessage = `STRENGTH: ${rating} (${entropy} bits)`;
+    
+    showMessage(evaluationMessage, 'info');
 }
 
 function copyToClipboardHandler(copySelected) {
@@ -359,7 +367,7 @@ function copyToClipboardHandler(copySelected) {
     }
 
     navigator.clipboard.writeText(textToCopy).then(() => {
-        // Removed: showMessage('Password(s) copied to clipboard!', 'info');
+        // You might want a success message here too, e.g., showMessage('Password(s) copied!', 'info');
     }).catch(err => {
         showMessage('Failed to copy text. Check browser permissions.', 'error');
     });

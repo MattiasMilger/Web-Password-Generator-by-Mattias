@@ -78,7 +78,7 @@ h1 {
 /* --- Header Controls (Dark Mode/Info Buttons) --- */
 .header-controls {
     display: flex;
-    justify-content: flex-end;
+    justify-content: center; /* CHANGE: Centered the buttons */
     gap: 10px;
     margin-bottom: 20px;
 }
@@ -217,26 +217,68 @@ button:disabled {
     color: var(--fg-color);
 }
 
-/* --- Message Area --- */
+/* --- Message Area (Placeholder Fix) --- */
 .message-area {
-    padding: 10px 15px;
+    /* Defines the placeholder space */
     margin-bottom: 20px;
     border-radius: 4px;
     font-weight: bold;
     text-align: center;
+    box-sizing: border-box; 
+    
+    /* FIX: LOCKING THE HEIGHT */
+    height: 42px; 
+    padding: 0 15px; /* Only horizontal padding */
+    line-height: 40px; 
+    
+    /* Always reserve 1px space for the border */
+    border: 1px solid transparent; 
+
+    /* Transition properties for smooth hide/show */
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+/* Hide using visibility/opacity to preserve space */
+.message-area.hidden { 
+    opacity: 0; 
+    visibility: hidden;
 }
 
 /* Use color-mix for subtle background variations in light mode */
-.message-area.error { background-color: color-mix(in srgb, var(--error-color) 10%, white); color: var(--error-color); border: 1px solid var(--error-color); }
-.message-area.warning { background-color: color-mix(in srgb, var(--warning-color) 10%, white); color: var(--warning-color); border: 1px solid var(--warning-color); }
-.message-area.info { background-color: color-mix(in srgb, var(--info-color) 10%, white); color: var(--info-color); border: 1px solid var(--info-color); }
-
-.message-area.hidden { display: none; }
+.message-area.error { 
+    background-color: color-mix(in srgb, var(--error-color) 10%, white); 
+    color: var(--error-color); 
+    border-color: var(--error-color); /* Only change color, size is static */
+}
+.message-area.warning { 
+    background-color: color-mix(in srgb, var(--warning-color) 10%, white); 
+    color: var(--warning-color); 
+    border-color: var(--warning-color); /* Only change color, size is static */
+}
+.message-area.info { 
+    background-color: color-mix(in srgb, var(--info-color) 10%, white); 
+    color: var(--info-color); 
+    border-color: var(--info-color); /* Only change color, size is static */
+}
 
 /* Dark mode adjustments for messages (use darker mixing color) */
-body.dark-mode .message-area.error { background-color: color-mix(in srgb, var(--error-color) 20%, black); color: var(--error-color); }
-body.dark-mode .message-area.warning { background-color: color-mix(in srgb, var(--warning-color) 20%, black); color: var(--warning-color); }
-body.dark-mode .message-area.info { background-color: color-mix(in srgb, var(--info-color) 20%, black); color: var(--info-color); }
+body.dark-mode .message-area.error { 
+    background-color: color-mix(in srgb, var(--error-color) 20%, black); 
+    color: var(--error-color); 
+    border-color: var(--error-color);
+}
+body.dark-mode .message-area.warning { 
+    background-color: color-mix(in srgb, var(--warning-color) 20%, black); 
+    color: var(--warning-color); 
+    border-color: var(--warning-color);
+}
+body.dark-mode .message-area.info { 
+    background-color: color-mix(in srgb, var(--info-color) 20%, black); 
+    color: var(--info-color); 
+    border-color: var(--info-color);
+}
 
 /* --- Modal Styles (For Info Popup) --- */
 .modal {
