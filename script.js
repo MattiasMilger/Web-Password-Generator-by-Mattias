@@ -436,8 +436,10 @@ ui.passwordsSelect.addEventListener('change', () => {
 ui.btnCopySelected.addEventListener('click', () => copyToClipboardHandler(true));
 ui.btnCopyAll.addEventListener('click', () => copyToClipboardHandler(false));
 
-// Initialize in Dark Mode
+// Initialize in Dark Mode AND generate a password on load
 document.addEventListener('DOMContentLoaded', () => {
     updatePasswordList([]);
     ui.body.classList.add('dark-mode');
+    // FIX: Roll a password per default on page load
+    generatePasswordHandler();
 });
