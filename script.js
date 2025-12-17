@@ -1,7 +1,7 @@
 // --- CONFIGURATION CONSTANTS ---
-const MAX_PASSWORD_LENGTH = 999;
-const MAX_PASSWORDS = 999;
-const MAX_SPECIFIC_WORD_LENGTH = 50;
+const MAX_PASSWORD_LENGTH = 500;
+const MAX_PASSWORDS = 500;
+const MAX_SPECIFIC_WORD_LENGTH = 100;
 
 // Factory defaults for when input fields are left blank
 const FACTORY_DEFAULTS = {
@@ -21,7 +21,15 @@ const ERROR_MESSAGES = {
     short_password: (min) => `Password length is too short. You need at least ${min} characters to meet the requirements.`,
     max_password_length: `Maximum password length is ${MAX_PASSWORD_LENGTH}.`,
     max_passwords: `Maximum number of passwords allowed is ${MAX_PASSWORDS}.`,
-    no_password_selected: "Please select a password from the list to evaluate its strength."
+    no_password_selected: "Please select a password from the list to evaluate its strength.",
+    
+    // UPDATED ERROR MESSAGES (for blank or 0)
+    positive_length: "password length must be a positive whole number",
+    positive_num_passwords: "Number of Passwords must be a positive whole number",
+    positive_combined: "Password length and number of passwords must be positive whole numbers",
+    
+    // NEW ERROR MESSAGE
+    exceeds_min_requirement: "mMeeting the requirements would exceed the password length limit."
 };
 
 // --- CHARACTER SETS ---
@@ -93,28 +101,52 @@ function secureShuffle(array) {
     }
 }
 
+// Input Restriction function for numeric fields (prevents '.', 'e', etc.)
+function restrictInput(event) {
+    const key = event.key;
+    
+    // Allow navigation and control keys (e.g., Backspace, Delete, Tab, Arrows, Ctrl+A/C/V)
+    if (event.ctrlKey || event.altKey || event.metaKey || 
+        ['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(key)) {
+        return;
+    }
+
+    // Explicitly block characters that can be typed in a type="number" field but are not integers: 
+    // '.', 'e', 'E', ',', '+', '-'
+    if (['.', 'e', 'E', ',', '+', '-'].includes(key)) {
+        event.preventDefault();
+    }
+}
+
 /**
- * Parses raw text input into a validated integer, using FACTORY_DEFAULTS if empty.
+ * Parses raw text input into a validated non-negative integer. 
+ * For auxiliary fields (punct, digits, caps), blank returns 0.
+ * For primary fields (length, num_passwords), blank/zero validation is handled by the caller.
  */
 function getEntryValueFromText(rawText, key, maxValue) {
     const raw = rawText.trim();
-    const defaultValue = FACTORY_DEFAULTS[key];
 
-    // If field is empty, use the factory default value for generation
+    // Auxiliary fields: treat blank as 0.
     if (raw === "") {
-        return defaultValue;
+        if (['punctuation', 'digits', 'capitals'].includes(key)) {
+            return 0;
+        }
+        // For 'length' and 'num_passwords', the caller handles the blank string.
     }
-    
+
+    // Must be a non-negative whole number (this implicitly catches blank for primary fields if the caller didn't)
     if (!/^\d+$/.test(raw)) {
         throw new Error(ERROR_MESSAGES.invalid_number);
     }
     
     const value = parseInt(raw, 10);
     
+    // Check for negative values
     if (value < 0) {
         throw new Error(ERROR_MESSAGES.negative_value);
     }
     
+    // Check maximum bounds
     if (value > maxValue) {
         throw new Error(ERROR_MESSAGES.exceeds_max(maxValue));
     }
@@ -141,10 +173,9 @@ function passwordCreation(length, numPunct, numDigits, numCapitals, specificWord
     if (length > MAX_PASSWORD_LENGTH) {
         throw new Error(ERROR_MESSAGES.max_password_length);
     }
-    if (length < minLength) {
-        throw new Error(ERROR_MESSAGES.short_password(minLength));
-    }
-
+    // Note: The logic for checking if length < minLength (and if minLength > MAX_PASSWORD_LENGTH) is now handled 
+    // in generatePasswordHandler before calling this function, simplifying this internal check.
+    
     const punctuationSet = simpleChars ? DEFAULT_CHARSETS.simple_punctuation : DEFAULT_CHARSETS.punctuation;
 
     const components = [
@@ -274,12 +305,17 @@ function resetFieldsHandler() {
 
 function showInfoHandler() {
     const infoContent = 
-        "Default Values (Used for generation when input fields are left blank):\n" +
+        "Default Values:\n" + 
         `• Length: ${FACTORY_DEFAULTS.length}\n` +
         `• Capitals: ${FACTORY_DEFAULTS.capitals}\n` +
         `• Digits: ${FACTORY_DEFAULTS.digits}\n` +
         `• Punctuation: ${FACTORY_DEFAULTS.punctuation}\n` +
         `• Number of Passwords: ${FACTORY_DEFAULTS.num_passwords}\n` +
+        "\n" +
+        "Input Field Behavior:\n" +
+        "• Password Length and Number of Passwords must be a positive whole number (1 or higher). Blank or 0 input will result in an error.\n" +
+        "• Punctuation, Digits, and Capitals fields will be treated as 0 if left blank.\n" +
+        "• Specific Word must not exceed 100 characters.\n" +
         "\n" +
         "Maximum Limits:\n" + 
         `• Max Password Length: ${MAX_PASSWORD_LENGTH}\n` +
@@ -327,18 +363,48 @@ function updatePasswordList(passwords) {
 
 function generatePasswordHandler() {
     try {
-        const length = getEntryValueFromText(ui.length.value, 'length', MAX_PASSWORD_LENGTH);
-        const punct = getEntryValueFromText(ui.punctuation.value, 'punctuation', MAX_PASSWORDS);
-        const digits = getEntryValueFromText(ui.digits.value, 'digits', MAX_PASSWORDS);
-        const caps = getEntryValueFromText(ui.capitals.value, 'capitals', MAX_PASSWORDS);
-        const numPw = getEntryValueFromText(ui.numPasswords.value, 'num_passwords', MAX_PASSWORDS);
         let specificWord = ui.specificWord.value.trim();
 
         if (specificWord.length > MAX_SPECIFIC_WORD_LENGTH) {
-            throw new Error(ERROR_MESSAGES.invalid_specific_word);
+            throw new Error(`Specific word length exceeds maximum of ${MAX_SPECIFIC_WORD_LENGTH}.`);
         }
         
+        // --- BLANK/ZERO VALIDATION FOR LENGTH AND NUMBER OF PASSWORDS ---
+        const lengthRaw = ui.length.value.trim();
+        const numPwRaw = ui.numPasswords.value.trim();
+        let length, numPw;
+        
+        const isLengthInvalid = lengthRaw === "" || lengthRaw === "0";
+        const isNumPwInvalid = numPwRaw === "" || numPwRaw === "0";
+
+        if (isLengthInvalid && isNumPwInvalid) {
+            throw new Error(ERROR_MESSAGES.positive_combined);
+        }
+        if (isLengthInvalid) {
+            throw new Error(ERROR_MESSAGES.positive_length);
+        }
+        if (isNumPwInvalid) {
+            throw new Error(ERROR_MESSAGES.positive_num_passwords);
+        }
+
+        length = getEntryValueFromText(lengthRaw, 'length', MAX_PASSWORD_LENGTH);
+        numPw = getEntryValueFromText(numPwRaw, 'num_passwords', MAX_PASSWORDS);
+
+        // Get auxiliary inputs 
+        const punct = getEntryValueFromText(ui.punctuation.value, 'punctuation', MAX_PASSWORDS);
+        const digits = getEntryValueFromText(ui.digits.value, 'digits', MAX_PASSWORDS);
+        const caps = getEntryValueFromText(ui.capitals.value, 'capitals', MAX_PASSWORDS);
+        
+        
         const minLen = punct + digits + caps + specificWord.length;
+
+        // --- NEW LOGIC: Check if minimum requirements exceed the maximum allowed password length ---
+        if (minLen > MAX_PASSWORD_LENGTH) {
+            showMessage(ERROR_MESSAGES.exceeds_min_requirement, 'error');
+            return;
+        }
+        // --- END NEW LOGIC ---
+
         if (length < minLen) {
             showMessage(ERROR_MESSAGES.short_password(minLen), 'warning');
             return;
@@ -371,7 +437,6 @@ function evaluateSelectedPasswordHandler() {
     const password = selectedOptions[0].value;
     const { entropy, rating } = evaluateStrength(password);
 
-    // Updated: Display strength in the message area (info type) and removed the password itself.
     const evaluationMessage = `STRENGTH: ${rating} (${entropy} bits)`;
     
     showMessage(evaluationMessage, 'info');
@@ -387,7 +452,7 @@ function copyToClipboardHandler(copySelected) {
             return;
         }
         textToCopy = selectedOptions.map(opt => opt.value).join('\n');
-        // NEW: Info message for copying selected
+        
         navigator.clipboard.writeText(textToCopy).then(() => {
             showMessage('Selected password(s) copied to clipboard.', 'info');
         }).catch(err => {
@@ -400,7 +465,7 @@ function copyToClipboardHandler(copySelected) {
             return;
         }
         textToCopy = allOptions.map(opt => opt.value).join('\n');
-        // NEW: Info message for copying all
+        
         navigator.clipboard.writeText(textToCopy).then(() => {
             showMessage('All passwords copied to clipboard.', 'info');
         }).catch(err => {
@@ -417,6 +482,14 @@ ui.btnClear.addEventListener('click', resetFieldsHandler);
 ui.btnEvaluate.addEventListener('click', evaluateSelectedPasswordHandler);
 ui.btnToggleTheme.addEventListener('click', toggleDarkMode);
 ui.btnShowInfo.addEventListener('click', showInfoHandler);
+
+// Function to attach keyboard restriction listeners
+function addInputRestrictions() {
+    [ui.length, ui.punctuation, ui.digits, ui.capitals, ui.numPasswords].forEach(input => {
+        input.addEventListener('keydown', restrictInput);
+    });
+}
+addInputRestrictions();
 
 // Close modal on click/key
 ui.closeButtons.forEach(btn => btn.addEventListener('click', closeInfoModal));
@@ -440,6 +513,6 @@ ui.btnCopyAll.addEventListener('click', () => copyToClipboardHandler(false));
 document.addEventListener('DOMContentLoaded', () => {
     updatePasswordList([]);
     ui.body.classList.add('dark-mode');
-    // FIX: Roll a password per default on page load
+    // Roll a password per default on page load
     generatePasswordHandler();
 });
