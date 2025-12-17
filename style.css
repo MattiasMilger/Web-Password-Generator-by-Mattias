@@ -254,7 +254,8 @@ button:disabled {
     text-align: center;
     box-sizing: border-box; 
     
-    /* FIX: LOCKING THE HEIGHT */
+    /* FIX: LOCKING THE HEIGHT (Remove this if text wrapping is necessary for multi-line error messages) */
+    /* Since we're keeping it static-height for the user's current design: */
     height: 42px; 
     padding: 0 15px; /* Only horizontal padding */
     line-height: 40px; 
@@ -262,6 +263,10 @@ button:disabled {
     /* Always reserve 1px space for the border */
     border: 1px solid transparent; 
 
+    /* FIX FOR MOBILE OVERFLOW */
+    white-space: normal; /* Allow text to wrap */
+    word-wrap: break-word; /* Force long words to break */
+    
     /* Transition properties for smooth hide/show */
     opacity: 1;
     visibility: visible;
