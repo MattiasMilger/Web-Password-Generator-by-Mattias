@@ -245,7 +245,7 @@ button:disabled {
     color: var(--fg-color);
 }
 
-/* --- Message Area (Placeholder Fix) --- */
+/* --- Message Area (Fixed for Mobile Wrapping) --- */
 .message-area {
     /* Defines the placeholder space */
     margin-bottom: 20px;
@@ -254,18 +254,21 @@ button:disabled {
     text-align: center;
     box-sizing: border-box; 
     
-    /* FIX: LOCKING THE HEIGHT (Remove this if text wrapping is necessary for multi-line error messages) */
-    /* Since we're keeping it static-height for the user's current design: */
-    height: 42px; 
-    padding: 0 15px; /* Only horizontal padding */
-    line-height: 40px; 
-    
+    /* *** FIX START: Allow vertical expansion *** */
+    min-height: 42px; /* Set minimum height to match previous single-line design */
+    padding: 10px 15px; /* Use vertical padding instead of fixed line-height */
+    line-height: 1.4; /* Allow text to wrap naturally */
+    display: flex; /* Use flexbox to center multi-line text vertically */
+    align-items: center; 
+    justify-content: center;
+    /* *** FIX END *** */
+
     /* Always reserve 1px space for the border */
     border: 1px solid transparent; 
 
-    /* FIX FOR MOBILE OVERFLOW */
-    white-space: normal; /* Allow text to wrap */
-    word-wrap: break-word; /* Force long words to break */
+    /* Ensure text wraps */
+    white-space: normal; 
+    word-wrap: break-word; 
     
     /* Transition properties for smooth hide/show */
     opacity: 1;

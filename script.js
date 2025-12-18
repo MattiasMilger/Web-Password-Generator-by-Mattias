@@ -26,10 +26,10 @@ const ERROR_MESSAGES = {
     // UPDATED ERROR MESSAGES (for blank or 0)
     positive_length: "password length must be a positive whole number",
     positive_num_passwords: "Number of Passwords must be a positive whole number",
-    positive_combined: "Password length and number of passwords must be positive whole numbers",
+    positive_combined: "Password length and number of passwords must be positive whole numbers", 
     
     // NEW ERROR MESSAGE
-    exceeds_min_requirement: "mMeeting the requirements would exceed the password length limit."
+    exceeds_min_requirement: "Meeting the requirements would exceed the password length limit."
 };
 
 // --- CHARACTER SETS ---
@@ -173,8 +173,6 @@ function passwordCreation(length, numPunct, numDigits, numCapitals, specificWord
     if (length > MAX_PASSWORD_LENGTH) {
         throw new Error(ERROR_MESSAGES.max_password_length);
     }
-    // Note: The logic for checking if length < minLength (and if minLength > MAX_PASSWORD_LENGTH) is now handled 
-    // in generatePasswordHandler before calling this function, simplifying this internal check.
     
     const punctuationSet = simpleChars ? DEFAULT_CHARSETS.simple_punctuation : DEFAULT_CHARSETS.punctuation;
 
@@ -313,7 +311,7 @@ function showInfoHandler() {
         `• Number of Passwords: ${FACTORY_DEFAULTS.num_passwords}\n` +
         "\n" +
         "Input Field Behavior:\n" +
-        "• Password Length and Number of Passwords must be a positive whole number (1 or higher). Blank or 0 input will result in an error.\n" +
+        "• Password Length and Number of Passwords must be a positive whole number (1 or higher). If the required character count (capitals, digits, etc.) exceeds the entered length (or if length is blank/zero but requirements exist), the length field will be auto-corrected to meet the minimum and you must click 'Create Password(s)' again.\n" +
         "• Punctuation, Digits, and Capitals fields will be treated as 0 if left blank.\n" +
         "• Specific Word must not exceed 100 characters.\n" +
         "\n" +
@@ -369,7 +367,20 @@ function generatePasswordHandler() {
             throw new Error(`Specific word length exceeds maximum of ${MAX_SPECIFIC_WORD_LENGTH}.`);
         }
         
-        // --- BLANK/ZERO VALIDATION FOR LENGTH AND NUMBER OF PASSWORDS ---
+        // 1. Get auxiliary inputs and calculate minLen early
+        const punct = getEntryValueFromText(ui.punctuation.value, 'punctuation', MAX_PASSWORDS);
+        const digits = getEntryValueFromText(ui.digits.value, 'digits', MAX_PASSWORDS);
+        const caps = getEntryValueFromText(ui.capitals.value, 'capitals', MAX_PASSWORDS);
+        
+        const minLen = punct + digits + caps + specificWord.length;
+
+        // Check if requirements exceed max allowed length
+        if (minLen > MAX_PASSWORD_LENGTH) {
+            showMessage(ERROR_MESSAGES.exceeds_min_requirement, 'error');
+            return;
+        }
+
+        // 2. Get Raw Inputs
         const lengthRaw = ui.length.value.trim();
         const numPwRaw = ui.numPasswords.value.trim();
         let length, numPw;
@@ -377,39 +388,47 @@ function generatePasswordHandler() {
         const isLengthInvalid = lengthRaw === "" || lengthRaw === "0";
         const isNumPwInvalid = numPwRaw === "" || numPwRaw === "0";
 
-        if (isLengthInvalid && isNumPwInvalid) {
-            throw new Error(ERROR_MESSAGES.positive_combined);
-        }
-        if (isLengthInvalid) {
-            throw new Error(ERROR_MESSAGES.positive_length);
-        }
+        // Number of Passwords Validation (Must be positive)
         if (isNumPwInvalid) {
+            // Note: The original 'positive_combined' error is implicitly covered here if numPw is 0/blank.
             throw new Error(ERROR_MESSAGES.positive_num_passwords);
         }
-
-        length = getEntryValueFromText(lengthRaw, 'length', MAX_PASSWORD_LENGTH);
         numPw = getEntryValueFromText(numPwRaw, 'num_passwords', MAX_PASSWORDS);
 
-        // Get auxiliary inputs 
-        const punct = getEntryValueFromText(ui.punctuation.value, 'punctuation', MAX_PASSWORDS);
-        const digits = getEntryValueFromText(ui.digits.value, 'digits', MAX_PASSWORDS);
-        const caps = getEntryValueFromText(ui.capitals.value, 'capitals', MAX_PASSWORDS);
-        
-        
-        const minLen = punct + digits + caps + specificWord.length;
+        // --- PASSWORD LENGTH VALIDATION/AUTO-CORRECTION (Unified Logic) ---
+        let currentLength;
 
-        // --- NEW LOGIC: Check if minimum requirements exceed the maximum allowed password length ---
-        if (minLen > MAX_PASSWORD_LENGTH) {
-            showMessage(ERROR_MESSAGES.exceeds_min_requirement, 'error');
-            return;
+        if (isLengthInvalid) {
+            if (minLen > 0) {
+                // Case A: Length is blank/zero, but requirements exist.
+                // Auto-correct to minLen, show warning, and stop execution.
+                ui.length.value = minLen; 
+                showMessage(ERROR_MESSAGES.short_password(minLen), 'warning');
+                return; 
+            } else {
+                // Case B: Length is blank/zero, and no requirements exist.
+                // This must be a hard error (Password length must be positive).
+                throw new Error(ERROR_MESSAGES.positive_length);
+            }
+        } else {
+            // Case C: Length is not blank/zero, parse it.
+            currentLength = getEntryValueFromText(lengthRaw, 'length', MAX_PASSWORD_LENGTH);
+            
+            // Check if valid, but too short
+            if (currentLength < minLen) {
+                // Case D: Length is too short compared to requirements.
+                // Auto-correct to minLen, show warning, and stop execution.
+                ui.length.value = minLen; 
+                showMessage(ERROR_MESSAGES.short_password(minLen), 'warning');
+                return; 
+            }
+            
+            // If we reach here, length is valid and meets/exceeds requirements.
+            length = currentLength;
         }
-        // --- END NEW LOGIC ---
 
-        if (length < minLen) {
-            showMessage(ERROR_MESSAGES.short_password(minLen), 'warning');
-            return;
-        }
-
+        // --- PASSWORD GENERATION ---
+        
         const passwords = [];
         for (let i = 0; i < numPw; i++) {
             passwords.push(passwordCreation(
@@ -419,6 +438,7 @@ function generatePasswordHandler() {
         }
         
         updatePasswordList(passwords);
+        // Hide message area if generation was successful
         ui.messageArea.classList.add('hidden');
         
     } catch (e) {
