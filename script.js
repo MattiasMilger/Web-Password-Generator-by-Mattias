@@ -305,29 +305,17 @@ function resetFieldsHandler() {
 
 function showInfoHandler() {
     const infoContent = 
-        "Default Values:\n" + 
-        `• Length: ${FACTORY_DEFAULTS.length}\n` +
-        `• Capitals: ${FACTORY_DEFAULTS.capitals}\n` +
-        `• Digits: ${FACTORY_DEFAULTS.digits}\n` +
-        `• Punctuation: ${FACTORY_DEFAULTS.punctuation}\n` +
-        `• Number of Passwords: ${FACTORY_DEFAULTS.num_passwords}\n` +
-        "\n" +
-        "Input Field Behavior:\n" +
-        "• Password Length and Number of Passwords must be a positive whole number (1 or higher). If the required character count (capitals, digits, etc.) exceeds the entered length (or if length is blank/zero but requirements exist), the length field will be auto-corrected to meet the minimum and you must click 'Create Password(s)' again.\n" +
-        "• Punctuation, Digits, and Capitals fields will be treated as 0 if left blank.\n" +
-        "• Specific Word must not exceed 100 characters.\n" +
-        "\n" +
-        "Maximum Limits:\n" + 
-        `• Max Password Length: ${MAX_PASSWORD_LENGTH}\n` +
-        `• Max Number of Passwords: ${MAX_PASSWORDS}\n` +
-        `• Max Specific Word Length: ${MAX_SPECIFIC_WORD_LENGTH}\n` +
-        "\n" +
         "Field Explanations:\n" +
         "• Specific Word: Inserts the specified word or phrase randomly somewhere into the generated password.\n" +
         "• Evaluate Strength: Select a password and click to see an estimated strength score (in bits of entropy).\n" +
         "• Disambiguate: Avoids confusing characters (I, l, 1, 0, O, o).\n" +
         "• Simple Punctuation: Uses only ! ? . _ @ instead of the full set of symbols.\n" +
-        "• Reset Fields: Clears all input values and checkboxes. If pressed again when fields are empty, it loads the default numbers and clears the password list."; 
+        "• Reset Fields: Clears all input values and checkboxes. If pressed again when fields are empty, it loads the default numbers and clears the password list."+
+        "\n" +
+        "Maximum Limits:\n" + 
+        `• Max Password Length: ${MAX_PASSWORD_LENGTH}\n` +
+        `• Max Number of Passwords: ${MAX_PASSWORDS}\n` +
+        `• Max Specific Word Length: ${MAX_SPECIFIC_WORD_LENGTH}\n`
 
     ui.infoText.textContent = infoContent;
     ui.infoModal.classList.remove('hidden');
