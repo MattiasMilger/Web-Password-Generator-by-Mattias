@@ -24,12 +24,15 @@ const ERROR_MESSAGES = {
     no_password_selected: "Please select a password from the list to evaluate its strength.",
     
     // UPDATED ERROR MESSAGES (for blank or 0)
-    positive_length: "password length must be a positive whole number",
-    positive_num_passwords: "Number of Passwords must be a positive whole number",
-    positive_combined: "Password length and number of passwords must be positive whole numbers", 
+    positive_length: "Password length must be a positive whole number.",
+    positive_num_passwords: "Number of Passwords must be a positive whole number.",
+    positive_combined: "Password length and number of passwords must be positive whole numbers.", 
     
     // NEW ERROR MESSAGE
-    exceeds_min_requirement: "Meeting the requirements would exceed the password length limit."
+    exceeds_min_requirement: "Meeting the requirements would exceed the password length limit.",
+    
+    // NEW MESSAGE ADDED HERE
+    all_fields_empty: "Please add entries to the fields."
 };
 
 // --- CHARACTER SETS ---
@@ -255,14 +258,13 @@ function toggleDarkMode() {
 
 // Helper to check if inputs are completely blank/default
 function areInputsBlank() {
+    // Check all text/number inputs. Ignoring checkboxes as they control behavior.
     return ui.length.value.trim() === "" &&
            ui.punctuation.value.trim() === "" &&
            ui.digits.value.trim() === "" &&
            ui.capitals.value.trim() === "" &&
            ui.specificWord.value.trim() === "" &&
-           ui.numPasswords.value.trim() === "" &&
-           !ui.disambiguate.checked &&
-           !ui.simplePunc.checked;
+           ui.numPasswords.value.trim() === "";
 }
 
 function resetFieldsHandler() {
@@ -361,6 +363,11 @@ function updatePasswordList(passwords) {
 
 function generatePasswordHandler() {
     try {
+        // NEW CODE: Check if all fields are blank
+        if (areInputsBlank()) {
+             throw new Error(ERROR_MESSAGES.all_fields_empty);
+        }
+        
         let specificWord = ui.specificWord.value.trim();
 
         if (specificWord.length > MAX_SPECIFIC_WORD_LENGTH) {
