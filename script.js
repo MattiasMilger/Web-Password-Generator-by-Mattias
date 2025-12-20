@@ -306,7 +306,7 @@ function resetFieldsHandler() {
 function showInfoHandler() {
     const infoContent = 
         "•  Reset Fields: Clears all input values. If pressed again, it loads the default values.\n" +
-        "• Specific Word: Inserts the specified word or phrase randomly somewhere into the generated password(s)."+
+        "• Specific Word: Inserts the specified word or phrase randomly somewhere into the generated password(s).\n"+
         "• Password Length: If too short, it will automatically be increased to meet the requirements."+
         "\n" +
         "Maximum Limits:\n" + 
