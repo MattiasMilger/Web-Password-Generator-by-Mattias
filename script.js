@@ -42,7 +42,10 @@ const DEFAULT_CHARSETS = {
     upper: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
     digits: '0123456789',
     punctuation: '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~',
-    simple_punctuation: '!?.@',
+    simple_punctuation: '!?._@',
+    // NEW: Pronounceable password character sets
+    consonants: 'bcdfghjklmnpqrstvwxyz',
+    vowels: 'aeiou'
 };
 
 // --- DOM ELEMENTS ---
@@ -56,6 +59,7 @@ const ui = {
     numPasswords: document.getElementById('num-passwords-input'),
     disambiguate: document.getElementById('disambiguate-check'),
     simplePunc: document.getElementById('simple-punc-check'),
+    pronounceable: document.getElementById('pronounceable-check'), // NEW
     btnCreate: document.getElementById('btn-create'),
     btnClear: document.getElementById('btn-clear'), 
     btnEvaluate: document.getElementById('btn-evaluate'),
@@ -169,7 +173,24 @@ function createRandomCharacters(count, charSet, disambiguate) {
     return result;
 }
 
-function passwordCreation(length, numPunct, numDigits, numCapitals, specificWord, disambiguateChars, simpleChars) {
+// NEW: Generate pronounceable password base
+function createPronounceableBase(length) {
+    const result = [];
+    let useConsonant = Math.random() > 0.5; // Randomly start with consonant or vowel
+    
+    while (result.length < length) {
+        if (useConsonant) {
+            result.push(secureChoice(DEFAULT_CHARSETS.consonants));
+        } else {
+            result.push(secureChoice(DEFAULT_CHARSETS.vowels));
+        }
+        useConsonant = !useConsonant; // Alternate
+    }
+    
+    return result;
+}
+
+function passwordCreation(length, numPunct, numDigits, numCapitals, specificWord, disambiguateChars, simpleChars, pronounceable) {
     const minLength = numPunct + numDigits + numCapitals + specificWord.length;
     const numLowercase = length - minLength;
 
@@ -179,20 +200,55 @@ function passwordCreation(length, numPunct, numDigits, numCapitals, specificWord
     
     const punctuationSet = simpleChars ? DEFAULT_CHARSETS.simple_punctuation : DEFAULT_CHARSETS.punctuation;
 
-    const components = [
-        [numLowercase, DEFAULT_CHARSETS.lower],
-        [numCapitals, DEFAULT_CHARSETS.upper],
-        [numDigits, DEFAULT_CHARSETS.digits],
-        [numPunct, punctuationSet],
-    ];
-
     let charList = [];
-    for (const [count, charSet] of components) {
-        charList.push(...createRandomCharacters(count, charSet, disambiguateChars));
-    }
-
-    secureShuffle(charList);
     
+    // NEW: Pronounceable mode generates alternating consonant-vowel pattern
+    if (pronounceable) {
+        charList = createPronounceableBase(numLowercase);
+        
+        // Add required capitals by capitalizing some letters
+        for (let i = 0; i < numCapitals && i < charList.length; i++) {
+            const buffer = new Uint32Array(1);
+            window.crypto.getRandomValues(buffer);
+            const randomIndex = Math.floor(buffer[0] / (0xffffffff + 1) * charList.length);
+            charList[randomIndex] = charList[randomIndex].toUpperCase();
+        }
+        
+        // Add digits
+        charList.push(...createRandomCharacters(numDigits, DEFAULT_CHARSETS.digits, false));
+        
+        // Add punctuation
+        charList.push(...createRandomCharacters(numPunct, punctuationSet, false));
+        
+        // Shuffle only the special characters (digits and punctuation) to distribute them
+        const specialChars = charList.splice(numLowercase);
+        secureShuffle(specialChars);
+        
+        // Insert special characters at random positions
+        specialChars.forEach(char => {
+            const buffer = new Uint32Array(1);
+            window.crypto.getRandomValues(buffer);
+            const insertPos = Math.floor(buffer[0] / (0xffffffff + 1) * (charList.length + 1));
+            charList.splice(insertPos, 0, char);
+        });
+        
+    } else {
+        // Original random generation
+        const components = [
+            [numLowercase, DEFAULT_CHARSETS.lower],
+            [numCapitals, DEFAULT_CHARSETS.upper],
+            [numDigits, DEFAULT_CHARSETS.digits],
+            [numPunct, punctuationSet],
+        ];
+
+        for (const [count, charSet] of components) {
+            charList.push(...createRandomCharacters(count, charSet, disambiguateChars));
+        }
+
+        secureShuffle(charList);
+    }
+    
+    // Insert specific word at random position
     const buffer = new Uint32Array(1);
     window.crypto.getRandomValues(buffer);
     const insertPos = Math.floor(buffer[0] / (0xffffffff + 1) * (charList.length + 1)); 
@@ -281,6 +337,7 @@ function resetFieldsHandler() {
         
         ui.disambiguate.checked = false;
         ui.simplePunc.checked = false;
+        ui.pronounceable.checked = false; // NEW
 
         updatePasswordList([]);
         showMessage('Default settings loaded.', 'info');
@@ -296,6 +353,7 @@ function resetFieldsHandler() {
         // Reset checkboxes
         ui.disambiguate.checked = false;
         ui.simplePunc.checked = false;
+        ui.pronounceable.checked = false; // NEW
         
         // Clear passwords list and messages
         updatePasswordList([]);
@@ -304,17 +362,51 @@ function resetFieldsHandler() {
 }
 
 function showInfoHandler() {
-    const infoContent = 
-        "•  Reset Fields: Clears all input values. If pressed again, it loads the default values.\n" +
-        "• Specific Word: Inserts the specified word or phrase randomly somewhere into the generated password(s).\n"+
-        "• Password Length: If too short, it will automatically be increased to meet the requirements."+
-        "\n" +
-        "Maximum Limits:\n" + 
-        `• Max Password Length: ${MAX_PASSWORD_LENGTH}\n` +
-        `• Max Number of Passwords: ${MAX_PASSWORDS}\n` +
-        `• Max Specific Word Length: ${MAX_SPECIFIC_WORD_LENGTH}\n`
+    const infoContent = `
+<h3>Maximum Limits</h3>
 
-    ui.infoText.textContent = infoContent;
+<div class="info-section">
+    <ul class="info-list">
+        <li>Password Length: ${MAX_PASSWORD_LENGTH}</li>
+        <li>Number of Passwords: ${MAX_PASSWORDS}</li>
+        <li>Specific Word Length: ${MAX_SPECIFIC_WORD_LENGTH}</li>
+    </ul>
+</div>
+
+<h3>Features</h3>
+
+<div class="info-section">
+    <strong>Reset Fields</strong>
+    <p>Clears all input values. Press again to load default settings.</p>
+</div>
+
+<div class="info-section">
+    <strong>Specific Word</strong>
+    <p>Inserts your chosen word or phrase randomly into the password(s).</p>
+</div>
+
+<div class="info-section">
+    <strong>Password Length</strong>
+    <p>If set too short, it will automatically increase to meet your requirements.</p>
+</div>
+
+<div class="info-section">
+    <strong>Disambiguate</strong>
+    <p>Avoids confusing characters like I, l, 1, 0, O, o that look similar.</p>
+</div>
+
+<div class="info-section">
+    <strong>Simple Punctuation</strong>
+    <p>Uses only basic symbols: ! ? . _ @</p>
+</div>
+
+<div class="info-section">
+    <strong>Pronounceable Mode</strong>
+    <p>Creates passwords using alternating consonants and vowels, making them easier to remember and type while maintaining security (e.g., "Ta2ko!Liv4").</p>
+</div>
+`;
+
+    ui.infoText.innerHTML = infoContent;
     ui.infoModal.classList.remove('hidden');
 }
 
@@ -346,7 +438,7 @@ function updatePasswordList(passwords) {
     ui.btnCopyAll.disabled = false;
 }
 
-function generatePasswordHandler() {
+function generatePasswordHandler(showSuccessMessage = true) {
     try {
         // NEW CODE: Check if all fields are blank
         if (areInputsBlank()) {
@@ -425,13 +517,17 @@ function generatePasswordHandler() {
         for (let i = 0; i < numPw; i++) {
             passwords.push(passwordCreation(
                 length, punct, digits, caps, specificWord,
-                ui.disambiguate.checked, ui.simplePunc.checked
+                ui.disambiguate.checked, ui.simplePunc.checked, ui.pronounceable.checked // NEW
             ));
         }
         
         updatePasswordList(passwords);
-        // Hide message area if generation was successful
-        ui.messageArea.classList.add('hidden');
+        
+        // NEW: Show success message (only if showSuccessMessage is true)
+        if (showSuccessMessage) {
+            const passwordText = numPw === 1 ? 'password' : 'passwords';
+            showMessage(`Generated ${numPw} ${passwordText} successfully`, 'success');
+        }
         
     } catch (e) {
         updatePasswordList([]);
@@ -484,8 +580,14 @@ function copyToClipboardHandler(copySelected) {
             showMessage('Failed to copy text. Check browser permissions.', 'error');
         });
     }
+}
 
-    
+// NEW: Handler for Enter key press
+function handleEnterKey(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        generatePasswordHandler();
+    }
 }
 
 // --- EVENT LISTENERS ---
@@ -499,7 +601,11 @@ ui.btnShowInfo.addEventListener('click', showInfoHandler);
 function addInputRestrictions() {
     [ui.length, ui.punctuation, ui.digits, ui.capitals, ui.numPasswords].forEach(input => {
         input.addEventListener('keydown', restrictInput);
+        input.addEventListener('keydown', handleEnterKey); // NEW: Add Enter key support
     });
+    
+    // NEW: Add Enter key support to text input as well
+    ui.specificWord.addEventListener('keydown', handleEnterKey);
 }
 addInputRestrictions();
 
@@ -525,6 +631,6 @@ ui.btnCopyAll.addEventListener('click', () => copyToClipboardHandler(false));
 document.addEventListener('DOMContentLoaded', () => {
     updatePasswordList([]);
     ui.body.classList.add('dark-mode');
-    // Roll a password per default on page load
-    generatePasswordHandler();
+    // Roll a password per default on page load (without showing success message)
+    generatePasswordHandler(false);
 });

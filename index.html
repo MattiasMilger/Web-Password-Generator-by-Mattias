@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web Password Generator by Mattias</title>
     <link rel="stylesheet" href="style.css">
+    <script src="password-strength.js"></script>
 </head>
 <body>
     <div class="container">
@@ -55,6 +56,10 @@
                 <input type="checkbox" id="simple-punc-check">
                 <label for="simple-punc-check">Simple Punctuation (!?._@)</label>
             </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="pronounceable-check">
+                <label for="pronounceable-check">Pronounceable Mode</label>
+            </div>
         </div>
 
         <div class="button-bar">
@@ -62,12 +67,13 @@
             <button id="btn-copy-selected" disabled>Copy Selected</button>
             <button id="btn-copy-all" disabled>Copy All</button>
             <button id="btn-evaluate" disabled>Evaluate Selected</button>
-            <button id="btn-clear">Reset Fields</button> </div>
+            <button id="btn-clear">Reset Fields</button>
+        </div>
 
         <div class="output-area">
             <label>Generated Passwords:</label>
             <select id="passwords-select" size="10" multiple>
-                </select>
+            </select>
         </div>
     </div>
 

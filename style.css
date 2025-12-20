@@ -9,6 +9,7 @@
     --error-color: #e74c3c;
     --warning-color: #f39c12;
     --info-color: #3498db;
+    --success-color: #27ae60; /* NEW: Success color */
     --select-bg: #a0a0a0;
     --container-bg: #ffffff;
     --border-color: #ccc;
@@ -25,6 +26,7 @@ body.dark-mode {
     --error-color: #c0392b;
     --warning-color: #f1c40f;
     --info-color: #2ecc71;
+    --success-color: #2ecc71; /* NEW: Success color for dark mode */
     --select-bg: #5a5a5a;
     --container-bg: #2d2d30;
     --border-color: #444;
@@ -298,6 +300,12 @@ button:disabled {
     color: var(--info-color); 
     border-color: var(--info-color);
 }
+/* NEW: Success message styling */
+.message-area.success { 
+    background-color: color-mix(in srgb, var(--success-color) 10%, white); 
+    color: var(--success-color); 
+    border-color: var(--success-color);
+}
 
 /* Message Colors (Dark Mode) */
 body.dark-mode .message-area.error { 
@@ -314,6 +322,12 @@ body.dark-mode .message-area.info {
     background-color: color-mix(in srgb, var(--info-color) 20%, black); 
     color: var(--info-color); 
     border-color: var(--info-color);
+}
+/* NEW: Success message styling for dark mode */
+body.dark-mode .message-area.success { 
+    background-color: color-mix(in srgb, var(--success-color) 20%, black); 
+    color: var(--success-color); 
+    border-color: var(--success-color);
 }
 
 /* --- Modal Styles (For Info Popup) --- */
@@ -338,8 +352,10 @@ body.dark-mode .message-area.info {
     color: var(--fg-color);
     padding: 30px;
     border-radius: 8px;
-    width: 90%; /* Increased width for better mobile fit */
-    max-width: 600px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 85vh;
+    overflow-y: auto;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
     position: relative;
     transition: background-color 0.3s, color 0.3s;
@@ -348,12 +364,57 @@ body.dark-mode .message-area.info {
 .modal-content h2 {
     color: var(--accent-color);
     margin-top: 0;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 2px solid var(--border-color);
     padding-bottom: 10px;
+    font-size: 1.5em;
+}
+
+/* NEW: Info modal content styling for better readability */
+.modal-content h3 {
+    color: var(--accent-color);
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 1.2em;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+}
+
+.modal-content h3:first-of-type {
+    margin-top: 10px;
+}
+
+.info-section {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    background-color: var(--entry-bg);
+    border-radius: 6px;
+    border-left: 4px solid var(--accent-color);
+}
+
+.info-section strong {
+    display: block;
+    color: var(--accent-color);
+    font-size: 1em;
+    margin-bottom: 4px;
+}
+
+.info-section p {
+    margin: 0;
+    line-height: 1.5;
+    color: var(--fg-color);
+}
+
+.info-list {
+    margin: 0;
+    padding-left: 20px;
+    line-height: 1.8;
+}
+
+.info-list li {
+    margin-bottom: 5px;
 }
 
 #info-text {
-    white-space: pre-wrap; 
     padding: 10px 0;
     font-size: 0.95em;
     line-height: 1.6;
@@ -431,5 +492,15 @@ body.dark-mode .message-area.info {
     .container {
         padding: 15px;
         margin: 15px 10px; /* Adjusted margin for mobile */
+    }
+    
+    /* 7. Modal adjustments for mobile */
+    .modal-content {
+        padding: 20px;
+        max-height: 90vh;
+    }
+    
+    .info-section {
+        padding: 10px 12px;
     }
 }
