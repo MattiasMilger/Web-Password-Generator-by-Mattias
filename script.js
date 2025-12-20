@@ -18,7 +18,7 @@ const ERROR_MESSAGES = {
     invalid_number: "Please enter a valid whole number.",
     negative_value: "Please enter 0 or higher.",
     exceeds_max: (max) => `Value is too large. Maximum allowed: ${max}.`,
-    short_password: (min) => `Password length is too short. You need at least ${min} characters to meet the requirements.`,
+    short_password: (min) => `Password length has been increased to ${min} to meet the requirements.`,
     max_password_length: `Maximum password length is ${MAX_PASSWORD_LENGTH}.`,
     max_passwords: `Maximum number of passwords allowed is ${MAX_PASSWORDS}.`,
     no_password_selected: "Please select a password from the list to evaluate its strength.",
@@ -307,6 +307,7 @@ function showInfoHandler() {
     const infoContent = 
         "•  Reset Fields: Clears all input values. If pressed again, it loads the default values.\n" +
         "• Specific Word: Inserts the specified word or phrase randomly somewhere into the generated password(s)."+
+        "• Password Length: If too short, it will automatically be increased to meet the requirements."+
         "\n" +
         "Maximum Limits:\n" + 
         `• Max Password Length: ${MAX_PASSWORD_LENGTH}\n` +
