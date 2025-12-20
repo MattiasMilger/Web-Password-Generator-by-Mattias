@@ -31,16 +31,32 @@ body.dark-mode {
     --shadow-color: rgba(0, 0, 0, 0.3);
 }
 
-/* --- Global Reset and Setup --- */
+/* --- Global Reset and Setup (FIX 1: Box Sizing) --- */
+*,
+*::before,
+*::after {
+    box-sizing: border-box; /* Ensures padding/border is included in the width, preventing overflow */
+}
+
+/* --- HTML/Body Fixes for Full Background Coverage (FIXED) --- */
+html, body {
+    width: 100%;
+    height: 100%; /* For older browsers */
+    min-height: 100vh; 
+    min-height: 100dvh; /* FIX 2: Dynamic Viewport Height for Mobile */
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden; /* FIX 3: Prevents horizontal scroll/overflow */
+}
+
 body {
     font-family: Arial, sans-serif;
     background-color: var(--bg-color);
     color: var(--fg-color);
-    margin: 0;
-    padding: 20px;
+    padding: 0; /* FIX: Removed body padding so background covers 100% height */
     display: flex;
     justify-content: center;
-    min-height: 100vh;
+    align-items: flex-start; /* Align content to the top */
     transition: background-color 0.3s, color 0.3s;
 }
 
@@ -48,7 +64,9 @@ body {
     width: 100%;
     max-width: 900px;
     background-color: var(--container-bg);
-    padding: 30px;
+    padding: 20px; 
+    /* FIX: Added margin to space the container from the edge, replacing body padding */
+    margin: 20px 10px; 
     border-radius: 8px;
     box-shadow: 0 4px 12px var(--shadow-color);
     transition: background-color 0.3s, box-shadow 0.3s;
@@ -59,11 +77,10 @@ h1 {
     color: var(--accent-color);
     text-align: center;
     margin-top: 0;
-    padding-bottom: 5px; /* Reduced space above subtitle */
+    padding-bottom: 5px; 
 }
 
 .subtitle {
-    /* Ensure subtitle is explicitly centered */
     text-align: center; 
     font-size: 1.1em;
     font-weight: normal;
@@ -78,7 +95,7 @@ h1 {
 /* --- Header Controls (Dark Mode/Info Buttons) --- */
 .header-controls {
     display: flex;
-    justify-content: center; /* CHANGE: Centered the buttons */
+    justify-content: center; 
     gap: 10px;
     margin-bottom: 20px;
 }
@@ -119,39 +136,36 @@ h1 {
     padding: 10px;
     border: 1px solid var(--border-color);
     border-radius: 4px;
-    box-sizing: border-box;
+    box-sizing: border-box; /* Inherited from global *, but good practice */
     font-size: 1em;
     background-color: var(--entry-bg);
     color: var(--fg-color);
     transition: background-color 0.3s, color 0.3s, border-color 0.3s;
 }
 
-/* NEW: Theming for Number Input Spinners */
+/* Theming for Number Input Spinners */
 .input-grid input[type="number"]::-webkit-inner-spin-button,
 .input-grid input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
-    margin: 0; /* Remove default margin */
-    /* Custom styling */
+    margin: 0; 
     width: 25px; 
     height: 100%;
     background-color: var(--button-bg);
     color: var(--fg-color);
     cursor: pointer;
-    opacity: 1; /* Ensure they are visible */
-    border-left: 1px solid var(--border-color); /* Separator line */
+    opacity: 1; 
+    border-left: 1px solid var(--border-color); 
     transition: background-color 0.2s, color 0.2s;
 }
 
-/* Style the up/down buttons more explicitly */
 .input-grid input[type="number"]::-webkit-inner-spin-button {
-    height: 50%; /* Make each button half the height */
+    height: 50%; 
     padding: 0;
 }
 .input-grid input[type="number"]::-webkit-outer-spin-button {
-    height: 50%; /* Make each button half the height */
+    height: 50%; 
     padding: 0;
 }
-/* End of NEW CSS for Spinners */
 
 
 /* --- Options Bar --- */
@@ -197,12 +211,10 @@ h1 {
     background-color: var(--accent-color);
     color: white;
 }
-/* Use color-mix for a slightly darker hover accent color */
 #btn-create:hover:not(:disabled) {
     background-color: color-mix(in srgb, var(--accent-color) 80%, black);
 }
 
-/* Styling for the Clear button and others */
 #btn-clear, #btn-evaluate, #btn-copy-selected, #btn-copy-all {
     background-color: var(--button-bg);
     color: var(--fg-color);
@@ -239,67 +251,55 @@ button:disabled {
     transition: background-color 0.3s, color 0.3s, border-color 0.3s;
 }
 
-/* Style for selected options */
 #passwords-select option:checked {
     background-color: var(--select-bg);
     color: var(--fg-color);
 }
 
-/* --- Message Area (Fixed for Mobile Wrapping) --- */
+/* --- Message Area --- */
 .message-area {
-    /* Defines the placeholder space */
     margin-bottom: 20px;
     border-radius: 4px;
     font-weight: bold;
     text-align: center;
     box-sizing: border-box; 
-    
-    /* *** FIX START: Allow vertical expansion *** */
-    min-height: 42px; /* Set minimum height to match previous single-line design */
-    padding: 10px 15px; /* Use vertical padding instead of fixed line-height */
-    line-height: 1.4; /* Allow text to wrap naturally */
-    display: flex; /* Use flexbox to center multi-line text vertically */
+    min-height: 42px; 
+    padding: 10px 15px; 
+    line-height: 1.4; 
+    display: flex; 
     align-items: center; 
     justify-content: center;
-    /* *** FIX END *** */
-
-    /* Always reserve 1px space for the border */
     border: 1px solid transparent; 
-
-    /* Ensure text wraps */
     white-space: normal; 
     word-wrap: break-word; 
-    
-    /* Transition properties for smooth hide/show */
     opacity: 1;
     visibility: visible;
     transition: opacity 0.3s, visibility 0.3s;
 }
 
-/* Hide using visibility/opacity to preserve space */
 .message-area.hidden { 
     opacity: 0; 
     visibility: hidden;
 }
 
-/* Use color-mix for subtle background variations in light mode */
+/* Message Colors (Light Mode) */
 .message-area.error { 
     background-color: color-mix(in srgb, var(--error-color) 10%, white); 
     color: var(--error-color); 
-    border-color: var(--error-color); /* Only change color, size is static */
+    border-color: var(--error-color);
 }
 .message-area.warning { 
     background-color: color-mix(in srgb, var(--warning-color) 10%, white); 
     color: var(--warning-color); 
-    border-color: var(--warning-color); /* Only change color, size is static */
+    border-color: var(--warning-color);
 }
 .message-area.info { 
     background-color: color-mix(in srgb, var(--info-color) 10%, white); 
     color: var(--info-color); 
-    border-color: var(--info-color); /* Only change color, size is static */
+    border-color: var(--info-color);
 }
 
-/* Dark mode adjustments for messages (use darker mixing color) */
+/* Message Colors (Dark Mode) */
 body.dark-mode .message-area.error { 
     background-color: color-mix(in srgb, var(--error-color) 20%, black); 
     color: var(--error-color); 
@@ -338,7 +338,7 @@ body.dark-mode .message-area.info {
     color: var(--fg-color);
     padding: 30px;
     border-radius: 8px;
-    width: 80%;
+    width: 90%; /* Increased width for better mobile fit */
     max-width: 600px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
     position: relative;
@@ -353,7 +353,7 @@ body.dark-mode .message-area.info {
 }
 
 #info-text {
-    white-space: pre-wrap; /* Keeps line breaks from the JS string */
+    white-space: pre-wrap; 
     padding: 10px 0;
     font-size: 0.95em;
     line-height: 1.6;
@@ -388,4 +388,48 @@ body.dark-mode .message-area.info {
 }
 .modal-close-button:hover {
     background-color: var(--select-bg);
+}
+
+
+/* ======================================= */
+/* !!! CRITICAL MOBILE MEDIA QUERY FIXES !!! */
+/* ======================================= */
+
+@media (max-width: 768px) {
+    
+    /* 1. INPUT GRID STACKING */
+    .input-grid {
+        grid-template-columns: 1fr; /* Single column layout */
+        gap: 10px; 
+    }
+
+    /* 2. INPUT LABEL ALIGNMENT */
+    .input-grid label {
+        text-align: left; /* Labels align left, stacked on top of inputs */
+        padding-right: 0;
+    }
+
+    /* 3. BUTTON BAR STACKING */
+    .button-bar {
+        flex-direction: column; /* Buttons stack vertically */
+        gap: 10px;
+    }
+
+    /* 4. OPTIONS BAR STACKING */
+    .options-bar {
+        flex-direction: column; /* Checkboxes stack vertically */
+        gap: 10px;
+    }
+    
+    /* 5. HEADER CONTROLS WRAP */
+     .header-controls {
+        flex-wrap: wrap; 
+        gap: 10px;
+    }
+
+    /* 6. Ensure container padding is appropriate (FIXED) */
+    .container {
+        padding: 15px;
+        margin: 15px 10px; /* Adjusted margin for mobile */
+    }
 }
