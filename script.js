@@ -305,12 +305,8 @@ function resetFieldsHandler() {
 
 function showInfoHandler() {
     const infoContent = 
-        "Field Explanations:\n" +
-        "• Specific Word: Inserts the specified word or phrase randomly somewhere into the generated password.\n" +
-        "• Evaluate Strength: Select a password and click to see an estimated strength score (in bits of entropy).\n" +
-        "• Disambiguate: Avoids confusing characters (I, l, 1, 0, O, o).\n" +
-        "• Simple Punctuation: Uses only ! ? . _ @ instead of the full set of symbols.\n" +
-        "• Reset Fields: Clears all input values and checkboxes. If pressed again when fields are empty, it loads the default numbers and clears the password list."+
+        "•  Reset Fields: Clears all input values. If pressed again, it loads the default values.\n" +
+        "• Specific Word: Inserts the specified word or phrase randomly somewhere into the generated password(s)."+
         "\n" +
         "Maximum Limits:\n" + 
         `• Max Password Length: ${MAX_PASSWORD_LENGTH}\n` +
