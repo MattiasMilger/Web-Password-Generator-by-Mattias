@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web Password Generator by Mattias</title>
     <link rel="stylesheet" href="style.css">
-    <script src="password-strength.js"></script>
 </head>
 <body>
     <div class="container">
@@ -77,6 +76,9 @@
         </div>
     </div>
 
+    <!-- Load password strength evaluator first -->
+    <script src="password-strength.js"></script>
+    <!-- Then load main script -->
     <script src="script.js"></script>
 </body>
 </html>

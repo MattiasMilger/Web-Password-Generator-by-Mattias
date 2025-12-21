@@ -59,7 +59,7 @@ const ui = {
     numPasswords: document.getElementById('num-passwords-input'),
     disambiguate: document.getElementById('disambiguate-check'),
     simplePunc: document.getElementById('simple-punc-check'),
-    pronounceable: document.getElementById('pronounceable-check'), // NEW
+    pronounceable: document.getElementById('pronounceable-check'),
     btnCreate: document.getElementById('btn-create'),
     btnClear: document.getElementById('btn-clear'), 
     btnEvaluate: document.getElementById('btn-evaluate'),
@@ -79,9 +79,19 @@ const ui = {
 function showMessage(message, type = 'error') {
     ui.messageArea.textContent = message;
     ui.messageArea.className = `message-area ${type}`;
-    setTimeout(() => {
-        ui.messageArea.classList.add('hidden');
-    }, 5000);
+    
+    // Clear any existing timeout
+    if (ui.messageArea.timeoutId) {
+        clearTimeout(ui.messageArea.timeoutId);
+    }
+    
+    // Only set timeout for non-evaluation messages
+    if (!type.startsWith('evaluation-')) {
+        ui.messageArea.timeoutId = setTimeout(() => {
+            ui.messageArea.classList.add('hidden');
+        }, 5000);
+    }
+    // Evaluation messages stay until something else is shown
 }
 
 function secureChoice(charSet) {
@@ -258,54 +268,6 @@ function passwordCreation(length, numPunct, numDigits, numCapitals, specificWord
            charList.slice(insertPos).join('');
 }
 
-function evaluateStrength(password) {
-    if (!password) {
-        return { entropy: 0, rating: "No password provided." };
-    }
-
-    const length = password.length;
-    let charsetSize = 0;
-
-    const hasLower = /[a-z]/.test(password);
-    const hasUpper = /[A-Z]/.test(password);
-    const hasDigits = /[0-9]/.test(password);
-    const hasSymbols = /[!"#$%&'()*+,-./:;<=>?@\[\\\]^_`{|}~]/.test(password); 
-
-    if (hasLower) {
-        charsetSize += DEFAULT_CHARSETS.lower.length;
-    }
-    if (hasUpper) {
-        charsetSize += DEFAULT_CHARSETS.upper.length;
-    }
-    if (hasDigits) {
-        charsetSize += DEFAULT_CHARSETS.digits.length;
-    }
-    if (hasSymbols) {
-        charsetSize += DEFAULT_CHARSETS.punctuation.length;
-    }
-
-    if (charsetSize === 0) {
-        return { entropy: 0, rating: "Low (No recognizable characters)." };
-    }
-
-    const entropy = length * Math.log2(charsetSize);
-
-    let rating;
-    if (entropy < 28) {
-        rating = "Very Weak (Instantly crackable)";
-    } else if (entropy < 36) {
-        rating = "Weak (Crackable in minutes/hours)";
-    } else if (entropy < 60) {
-        rating = "Reasonable (Crackable in days/weeks)";
-    } else if (entropy < 80) {
-        rating = "Strong (Crackable in months/years)";
-    } else {
-        rating = "Very Strong (Crackable in decades/centuries)";
-    }
-
-    return { entropy: parseFloat(entropy.toFixed(2)), rating: rating };
-}
-
 // --- MAIN APPLICATION LOGIC ---
 
 function toggleDarkMode() {
@@ -337,9 +299,10 @@ function resetFieldsHandler() {
         
         ui.disambiguate.checked = false;
         ui.simplePunc.checked = false;
-        ui.pronounceable.checked = false; // NEW
+        ui.pronounceable.checked = false;
 
         updatePasswordList([]);
+        ui.messageArea.classList.add('hidden'); // Clear any visible message
         showMessage('Default settings loaded.', 'info');
     } else {
         // State 1: Clear all fields (set to blank)
@@ -353,10 +316,11 @@ function resetFieldsHandler() {
         // Reset checkboxes
         ui.disambiguate.checked = false;
         ui.simplePunc.checked = false;
-        ui.pronounceable.checked = false; // NEW
+        ui.pronounceable.checked = false;
         
         // Clear passwords list and messages
         updatePasswordList([]);
+        ui.messageArea.classList.add('hidden'); // Clear any visible message
         showMessage('All fields and generated passwords cleared.', 'info');
     }
 }
@@ -404,6 +368,11 @@ function showInfoHandler() {
     <strong>Pronounceable Mode</strong>
     <p>Creates passwords using alternating consonants and vowels, making them easier to remember and type while maintaining security (e.g., "Ta2ko!Liv4").</p>
 </div>
+
+<div class="info-section">
+    <strong>Evaluate Selected</strong>
+    <p>Analyzes password strength using advanced detection for patterns, common words, keyboard sequences, dates, and more. Shows detailed feedback on vulnerabilities and strengths.</p>
+</div>
 `;
 
     ui.infoText.innerHTML = infoContent;
@@ -436,6 +405,9 @@ function updatePasswordList(passwords) {
     ui.btnEvaluate.disabled = false;
     ui.btnCopySelected.disabled = false;
     ui.btnCopyAll.disabled = false;
+    
+    // Hide any visible messages when new passwords are generated
+    ui.messageArea.classList.add('hidden');
 }
 
 function generatePasswordHandler(showSuccessMessage = true) {
@@ -517,7 +489,7 @@ function generatePasswordHandler(showSuccessMessage = true) {
         for (let i = 0; i < numPw; i++) {
             passwords.push(passwordCreation(
                 length, punct, digits, caps, specificWord,
-                ui.disambiguate.checked, ui.simplePunc.checked, ui.pronounceable.checked // NEW
+                ui.disambiguate.checked, ui.simplePunc.checked, ui.pronounceable.checked
             ));
         }
         
@@ -543,11 +515,24 @@ function evaluateSelectedPasswordHandler() {
     }
 
     const password = selectedOptions[0].value;
-    const { entropy, rating } = evaluateStrength(password);
-
-    const evaluationMessage = `STRENGTH: ${rating} (${entropy} bits)`;
     
-    showMessage(evaluationMessage, 'info');
+    // Use the advanced evaluator from password-strength.js
+    const result = evaluatePasswordStrength(password);
+    const evaluationMessage = formatEvaluationMessage(result);
+    
+    // Determine message type based on strength - use 'evaluation' type for longer display
+    let messageType = 'evaluation';
+    if (result.strength === 'excellent' || result.strength === 'very-strong') {
+        messageType = 'evaluation-success';
+    } else if (result.strength === 'strong' || result.strength === 'moderate') {
+        messageType = 'evaluation-info';
+    } else if (result.strength === 'weak') {
+        messageType = 'evaluation-warning';
+    } else {
+        messageType = 'evaluation-error';
+    }
+    
+    showMessage(evaluationMessage, messageType);
 }
 
 function copyToClipboardHandler(copySelected) {
@@ -601,10 +586,10 @@ ui.btnShowInfo.addEventListener('click', showInfoHandler);
 function addInputRestrictions() {
     [ui.length, ui.punctuation, ui.digits, ui.capitals, ui.numPasswords].forEach(input => {
         input.addEventListener('keydown', restrictInput);
-        input.addEventListener('keydown', handleEnterKey); // NEW: Add Enter key support
+        input.addEventListener('keydown', handleEnterKey);
     });
     
-    // NEW: Add Enter key support to text input as well
+    // Add Enter key support to text input as well
     ui.specificWord.addEventListener('keydown', handleEnterKey);
 }
 addInputRestrictions();

@@ -263,20 +263,20 @@ button:disabled {
     margin-bottom: 20px;
     border-radius: 4px;
     font-weight: bold;
-    text-align: center;
+    text-align: left; /* Changed from center for detailed messages */
     box-sizing: border-box; 
     min-height: 42px; 
     padding: 10px 15px; 
-    line-height: 1.4; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center;
+    line-height: 1.6; /* Increased for better readability */
+    display: block; /* Changed from flex for multi-line content */
     border: 1px solid transparent; 
-    white-space: normal; 
+    white-space: pre-wrap; /* Changed to preserve line breaks */
     word-wrap: break-word; 
     opacity: 1;
     visibility: visible;
     transition: opacity 0.3s, visibility 0.3s;
+    font-family: 'Consolas', 'Monaco', monospace; /* Monospace for better alignment */
+    font-size: 0.9em;
 }
 
 .message-area.hidden { 
@@ -300,8 +300,29 @@ button:disabled {
     color: var(--info-color); 
     border-color: var(--info-color);
 }
-/* NEW: Success message styling */
 .message-area.success { 
+    background-color: color-mix(in srgb, var(--success-color) 10%, white); 
+    color: var(--success-color); 
+    border-color: var(--success-color);
+}
+
+/* Evaluation message types (same colors but semantic naming) */
+.message-area.evaluation-error { 
+    background-color: color-mix(in srgb, var(--error-color) 10%, white); 
+    color: var(--error-color); 
+    border-color: var(--error-color);
+}
+.message-area.evaluation-warning { 
+    background-color: color-mix(in srgb, var(--warning-color) 10%, white); 
+    color: var(--warning-color); 
+    border-color: var(--warning-color);
+}
+.message-area.evaluation-info { 
+    background-color: color-mix(in srgb, var(--info-color) 10%, white); 
+    color: var(--info-color); 
+    border-color: var(--info-color);
+}
+.message-area.evaluation-success { 
     background-color: color-mix(in srgb, var(--success-color) 10%, white); 
     color: var(--success-color); 
     border-color: var(--success-color);
@@ -323,8 +344,29 @@ body.dark-mode .message-area.info {
     color: var(--info-color); 
     border-color: var(--info-color);
 }
-/* NEW: Success message styling for dark mode */
 body.dark-mode .message-area.success { 
+    background-color: color-mix(in srgb, var(--success-color) 20%, black); 
+    color: var(--success-color); 
+    border-color: var(--success-color);
+}
+
+/* Evaluation message types for dark mode */
+body.dark-mode .message-area.evaluation-error { 
+    background-color: color-mix(in srgb, var(--error-color) 20%, black); 
+    color: var(--error-color); 
+    border-color: var(--error-color);
+}
+body.dark-mode .message-area.evaluation-warning { 
+    background-color: color-mix(in srgb, var(--warning-color) 20%, black); 
+    color: var(--warning-color); 
+    border-color: var(--warning-color);
+}
+body.dark-mode .message-area.evaluation-info { 
+    background-color: color-mix(in srgb, var(--info-color) 20%, black); 
+    color: var(--info-color); 
+    border-color: var(--info-color);
+}
+body.dark-mode .message-area.evaluation-success { 
     background-color: color-mix(in srgb, var(--success-color) 20%, black); 
     color: var(--success-color); 
     border-color: var(--success-color);
