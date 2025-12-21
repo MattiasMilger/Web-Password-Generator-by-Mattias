@@ -266,14 +266,14 @@ function checkPatterns(password, details) {
     const sequentialFound = SEQUENTIAL_PATTERNS.find(seq => lower.includes(seq));
     if (sequentialFound) {
         penalty += 15;
-        details.push({ type: 'warning', message: `Contains sequential pattern: "${sequentialFound}"` });
+        details.push({ type: 'warning', message: `Contains sequential pattern: "${sequentialFound}"`, pattern: 'sequential' });
     }
 
     // Check for common words
     const commonWordFound = COMMON_WORDS.find(word => lower.includes(word));
     if (commonWordFound) {
         penalty += 25;
-        details.push({ type: 'critical', message: `Contains common word: "${commonWordFound}"` });
+        details.push({ type: 'critical', message: `Contains common word: "${commonWordFound}"`, pattern: 'word' });
     }
 
     return penalty;
@@ -318,6 +318,9 @@ function checkTemporalPatterns(password, details) {
 function checkNumericPatterns(password, details) {
     let penalty = 0;
     
+    // Check if we already flagged a sequential pattern that includes digits
+    const alreadyFlaggedSequential = details.some(d => d.pattern === 'sequential');
+    
     // Extract all numeric sequences
     const numericSequences = password.match(/\d{3,}/g);
     
@@ -333,16 +336,17 @@ function checkNumericPatterns(password, details) {
                 if (diff !== -1) isReverse = false;
             }
             
-            if (isSequence || isReverse) {
+            // Only flag numeric sequences if we haven't already flagged a sequential pattern
+            if ((isSequence || isReverse) && !alreadyFlaggedSequential) {
                 penalty += 10;
-                details.push({ type: 'warning', message: `Contains numeric sequence: "${seq}"` });
+                details.push({ type: 'warning', message: `Contains numeric sequence: "${seq}"`, pattern: 'numeric' });
                 break;
             }
             
             // Check for repeated digits (111, 222, etc.)
             if (/(\d)\1{2,}/.test(seq)) {
                 penalty += 8;
-                details.push({ type: 'warning', message: `Contains repeated digits: "${seq}"` });
+                details.push({ type: 'warning', message: `Contains repeated digits: "${seq}"`, pattern: 'repeated-digits' });
                 break;
             }
         }
@@ -437,12 +441,14 @@ function checkCharDistribution(password, details) {
  */
 function checkLeetSpeak(password, details) {
     let penalty = 0;
-    const lower = password.toLowerCase();
 
     // Build dynamic leet patterns from common words
     const leetWords = ['password', 'admin', 'login', 'welcome', 'letmein'];
     
     for (const word of leetWords) {
+        // First check if the plain word exists (already caught by checkPatterns)
+        const plainWordExists = password.toLowerCase().includes(word);
+        
         // Create leet speak regex for each word
         const leetPattern = word
             .replace(/a/g, '[a4@]')
@@ -455,11 +461,13 @@ function checkLeetSpeak(password, details) {
         
         const regex = new RegExp(leetPattern, 'i');
         
-        if (regex.test(password)) {
+        // Only flag as leet speak if it matches the pattern BUT is not the plain word
+        if (regex.test(password) && !plainWordExists) {
             penalty += 20;
             details.push({ 
                 type: 'critical', 
-                message: `Contains common word with substitutions (leet speak): "${word}"` 
+                message: `Contains common word with substitutions (leet speak): "${word}"`,
+                pattern: 'leet'
             });
             break;
         }
@@ -565,10 +573,10 @@ function formatEvaluationMessage(result) {
     if (result.details.length > 0) {
         message += 'Analysis:\n';
         result.details.forEach(detail => {
-            const icon = detail.type === 'critical' ? '⚠️' : 
-                        detail.type === 'warning' ? '⚡' : 
-                        detail.type === 'bonus' ? '✓' : 'ℹ️';
-            message += `${icon} ${detail.message}\n`;
+            const prefix = detail.type === 'critical' ? '[CRITICAL]' : 
+                          detail.type === 'warning' ? '[WARNING]' : 
+                          detail.type === 'bonus' ? '[BONUS]' : '[INFO]';
+            message += `${prefix} ${detail.message}\n`;
         });
     }
     
