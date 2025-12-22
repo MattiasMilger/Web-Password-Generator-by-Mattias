@@ -23,7 +23,7 @@ const ERROR_MESSAGES = {
     max_passwords: `Maximum number of passwords allowed is ${MAX_PASSWORDS}.`,
     no_password_selected: "Please select a password from the list to evaluate its strength.",
     
-    // UPDATED ERROR MESSAGES (for blank or 0)
+    // Keeping these generic errors in case non-blank, non-numeric values are entered.
     positive_length: "Password length must be a positive whole number.",
     positive_num_passwords: "Number of Passwords must be a positive whole number.",
     positive_combined: "Password length and number of passwords must be positive whole numbers.", 
@@ -31,8 +31,9 @@ const ERROR_MESSAGES = {
     // NEW ERROR MESSAGE
     exceeds_min_requirement: "Meeting the requirements would exceed the password length limit.",
     
-    // NEW MESSAGE ADDED HERE
-    all_fields_empty: "Please add entries to the fields."
+    // AUTO-CORRECTION MESSAGES
+    auto_set_num: "Number of Passwords has been set to 1 to allow password generation.",
+    auto_set_one: "Number of Passwords and Password Length have been set to 1."
 };
 
 // --- CHARACTER SETS ---
@@ -335,7 +336,7 @@ function showInfoHandler() {
 
 <div class="info-section">
     <strong>Reset Fields</strong>
-    <p>Clears all input values. Press again to load default settings.</p>
+    <p>Clears all input values. Press again to load default settings. Does not include checkboxes.</p>
 </div>
 
 <div class="info-section">
@@ -364,7 +365,7 @@ function showInfoHandler() {
 </div>
 
 <div class="info-section">
-    <strong>Evaluate Selected</strong>
+    <strong>Evaluate Password</strong>
     <p>Analyzes password strength using advanced detection for patterns, common words, keyboard sequences, dates, and more. Shows detailed feedback on vulnerabilities and strengths.</p>
 </div>
 `;
@@ -400,19 +401,12 @@ function updatePasswordList(passwords) {
     ui.btnCopySelected.disabled = false;
     ui.btnCopyAll.disabled = false;
     
-    // FIX: Removed the line that hid the message area.
-    // ui.messageArea.classList.add('hidden');
+    // Message is intentionally NOT hidden here to allow the warning to persist.
 }
 
 function generatePasswordHandler(showSuccessMessage = true) {
     try {
-        // NEW CODE: Check if all fields are blank
-        if (areInputsBlank()) {
-             throw new Error(ERROR_MESSAGES.all_fields_empty);
-        }
-        
         let specificWord = ui.specificWord.value.trim();
-
         if (specificWord.length > MAX_SPECIFIC_WORD_LENGTH) {
             throw new Error(`Specific word length exceeds maximum of ${MAX_SPECIFIC_WORD_LENGTH}.`);
         }
@@ -421,7 +415,6 @@ function generatePasswordHandler(showSuccessMessage = true) {
         const punct = getEntryValueFromText(ui.punctuation.value, 'punctuation', MAX_PASSWORDS);
         const digits = getEntryValueFromText(ui.digits.value, 'digits', MAX_PASSWORDS);
         const caps = getEntryValueFromText(ui.capitals.value, 'capitals', MAX_PASSWORDS);
-        
         const minLen = punct + digits + caps + specificWord.length;
 
         // Check if requirements exceed max allowed length
@@ -437,48 +430,67 @@ function generatePasswordHandler(showSuccessMessage = true) {
         
         const isLengthInvalid = lengthRaw === "" || lengthRaw === "0";
         const isNumPwInvalid = numPwRaw === "" || numPwRaw === "0";
+        
+        let correctionMessage = "";
+        let requiresCorrection = false;
+        
+        // --- AUTO-CORRECTION LOGIC ---
 
-        // Number of Passwords Validation (Must be positive)
+        // A. CORRECT 'Number of Passwords' (numPw)
         if (isNumPwInvalid) {
-            // Note: The original 'positive_combined' error is implicitly covered here if numPw is 0/blank.
-            throw new Error(ERROR_MESSAGES.positive_num_passwords);
+            numPw = 1;
+            ui.numPasswords.value = 1; // Update UI
+            requiresCorrection = true;
+            correctionMessage = ERROR_MESSAGES.auto_set_num;
+        } else {
+            // If not invalid, parse it.
+            numPw = getEntryValueFromText(numPwRaw, 'num_passwords', MAX_PASSWORDS);
         }
-        numPw = getEntryValueFromText(numPwRaw, 'num_passwords', MAX_PASSWORDS);
-
-        // --- PASSWORD LENGTH VALIDATION/AUTO-CORRECTION (Unified Logic) ---
-        let currentLength;
-
+        
+        // B. CORRECT 'Password Length' (length)
         if (isLengthInvalid) {
+            requiresCorrection = true;
+
             if (minLen > 0) {
-                // Case A: Length is blank/zero, but requirements exist.
-                // Auto-correct to minLen, show warning, and RECURSE.
-                ui.length.value = minLen; 
-                showMessage(ERROR_MESSAGES.short_password(minLen), 'warning');
-                // RECURSE silently to generate password immediately
-                generatePasswordHandler(false); 
-                return; 
+                // Case 1: Length is blank/zero, but requirements exist.
+                length = minLen;
+                ui.length.value = minLen; // Update UI
+                
+                // Prioritize the length correction message
+                correctionMessage = ERROR_MESSAGES.short_password(minLen); 
+
             } else {
-                // Case B: Length is blank/zero, and no requirements exist.
-                // This must be a hard error (Password length must be positive).
-                throw new Error(ERROR_MESSAGES.positive_length);
+                // Case 2: Length is blank/zero, AND no requirements. Set to 1.
+                length = 1;
+                ui.length.value = 1; // Update UI
+                
+                if (isNumPwInvalid) {
+                    // Case 2a: Both length and numPw were invalid. Show combined message.
+                    correctionMessage = ERROR_MESSAGES.auto_set_one;
+                } else {
+                    // Case 2b: Only length was invalid. 
+                    correctionMessage = ERROR_MESSAGES.short_password(1);
+                }
             }
         } else {
-            // Case C: Length is not blank/zero, parse it.
-            currentLength = getEntryValueFromText(lengthRaw, 'length', MAX_PASSWORD_LENGTH);
-            
-            // Check if valid, but too short
-            if (currentLength < minLen) {
-                // Case D: Length is too short compared to requirements.
-                // Auto-correct to minLen, show warning, and RECURSE.
-                ui.length.value = minLen; 
-                showMessage(ERROR_MESSAGES.short_password(minLen), 'warning');
-                // RECURSE silently to generate password immediately
-                generatePasswordHandler(false); 
-                return; 
+            // If not invalid, parse it.
+            length = getEntryValueFromText(lengthRaw, 'length', MAX_PASSWORD_LENGTH);
+
+            // Case 3: Length is valid, but too short compared to requirements.
+            if (length < minLen) {
+                length = minLen;
+                ui.length.value = minLen; // Update UI
+                requiresCorrection = true;
+                
+                // Prioritize the length correction message
+                correctionMessage = ERROR_MESSAGES.short_password(minLen);
             }
-            
-            // If we reach here, length is valid and meets/exceeds requirements.
-            length = currentLength;
+        }
+        
+        // C. DISPLAY CORRECTION MESSAGE AND DISABLE SUCCESS MESSAGE
+        if (requiresCorrection) {
+             showMessage(correctionMessage, 'warning');
+             showSuccessMessage = false; // Prevent success message from overwriting warning
         }
 
         // --- PASSWORD GENERATION ---
@@ -493,7 +505,7 @@ function generatePasswordHandler(showSuccessMessage = true) {
         
         updatePasswordList(passwords);
         
-        // NEW: Show success message (only if showSuccessMessage is true)
+        // Show success message (only if showSuccessMessage is still true, meaning no auto-correction occurred)
         if (showSuccessMessage) {
             const passwordText = numPw === 1 ? 'password' : 'passwords';
             showMessage(`Generated ${numPw} ${passwordText} successfully`, 'success');
