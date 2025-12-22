@@ -297,10 +297,7 @@ function resetFieldsHandler() {
         ui.specificWord.value = FACTORY_DEFAULTS.specific_word;
         ui.numPasswords.value = FACTORY_DEFAULTS.num_passwords;
         
-        ui.disambiguate.checked = false;
-        ui.simplePunc.checked = false;
-        ui.pronounceable.checked = false;
-
+        // Checkboxes are intentionally NOT reset here.
         updatePasswordList([]);
         ui.messageArea.classList.add('hidden'); // Clear any visible message
         showMessage('Default settings loaded.', 'info');
@@ -313,10 +310,7 @@ function resetFieldsHandler() {
         ui.specificWord.value = "";
         ui.numPasswords.value = "";
 
-        // Reset checkboxes
-        ui.disambiguate.checked = false;
-        ui.simplePunc.checked = false;
-        ui.pronounceable.checked = false;
+        // Checkboxes are intentionally NOT reset here.
         
         // Clear passwords list and messages
         updatePasswordList([]);
@@ -406,8 +400,8 @@ function updatePasswordList(passwords) {
     ui.btnCopySelected.disabled = false;
     ui.btnCopyAll.disabled = false;
     
-    // Hide any visible messages when new passwords are generated
-    ui.messageArea.classList.add('hidden');
+    // FIX: Removed the line that hid the message area.
+    // ui.messageArea.classList.add('hidden');
 }
 
 function generatePasswordHandler(showSuccessMessage = true) {
@@ -457,9 +451,11 @@ function generatePasswordHandler(showSuccessMessage = true) {
         if (isLengthInvalid) {
             if (minLen > 0) {
                 // Case A: Length is blank/zero, but requirements exist.
-                // Auto-correct to minLen, show warning, and stop execution.
+                // Auto-correct to minLen, show warning, and RECURSE.
                 ui.length.value = minLen; 
                 showMessage(ERROR_MESSAGES.short_password(minLen), 'warning');
+                // RECURSE silently to generate password immediately
+                generatePasswordHandler(false); 
                 return; 
             } else {
                 // Case B: Length is blank/zero, and no requirements exist.
@@ -473,9 +469,11 @@ function generatePasswordHandler(showSuccessMessage = true) {
             // Check if valid, but too short
             if (currentLength < minLen) {
                 // Case D: Length is too short compared to requirements.
-                // Auto-correct to minLen, show warning, and stop execution.
+                // Auto-correct to minLen, show warning, and RECURSE.
                 ui.length.value = minLen; 
                 showMessage(ERROR_MESSAGES.short_password(minLen), 'warning');
+                // RECURSE silently to generate password immediately
+                generatePasswordHandler(false); 
                 return; 
             }
             
