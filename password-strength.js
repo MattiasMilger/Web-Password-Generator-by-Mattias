@@ -222,19 +222,28 @@ function evaluatePasswordStrength(password) {
     const numericPenalty = checkNumericPatterns(password, details);
     penalties += numericPenalty;
 
-    // Calculate final score (0-100 scale)
-    const baseScore = Math.min(100, (entropy / 128) * 100);
-    const finalScore = Math.max(0, Math.min(100, baseScore - penalties + bonuses));
+    // Adjust entropy based on penalties before calculating score and rating
+    const adjustedEntropy = Math.max(0, entropy - (penalties * 2)); // 2 bits penalty per score penalty point
+    
+    // *** MODIFIED SCORING LOGIC HERE (Asymptotic Curve) ***
+    // We use an asymptotic function to ensure the score approaches 100 but never reaches it.
+    const ASYMPTOTIC_SCALE = 70; // Scaling factor (chosen empirically for good curve shape)
+    
+    // Base score approaches 100 with higher entropy, but at a slower rate (asymptotic curve)
+    const baseScore = 100 * (1 - (1 / (1 + adjustedEntropy / ASYMPTOTIC_SCALE)));
 
-    // Adjust entropy based on penalties
-    const adjustedEntropy = Math.max(0, entropy - (penalties * 2));
+    // Calculate final score (0-100 scale), including bonuses
+    // Cap score just below 100 (e.g., 99.999)
+    const finalScore = Math.max(0, Math.min(99.999, baseScore + bonuses)); 
+    // *** END MODIFIED SCORING LOGIC ***
 
-    // Determine rating
+    // Determine rating based solely on Adjusted Entropy (the objective measure)
     const { rating, strength } = getRating(finalScore, adjustedEntropy);
 
     return {
-        score: Math.round(finalScore),
-        entropy: parseFloat(adjustedEntropy.toFixed(2)),
+        // ROUNDING CHANGE: Use toFixed(1) for maximum 3 digits (e.g., 99.9)
+        score: parseFloat(finalScore.toFixed(1)), 
+        entropy: parseFloat(adjustedEntropy.toFixed(1)), // Apply to entropy too for consistency
         rating: rating,
         details: details,
         strength: strength,
@@ -527,29 +536,30 @@ function checkEntropyConcentration(password, details) {
 
 /**
  * Get rating based on score and entropy
+ * NOTE: Rating relies primarily on 'entropy' (the objective measure).
  */
 function getRating(score, entropy) {
-    if (score >= 90 || entropy >= 100) {
+    if (entropy >= 100) {
         return { 
             rating: "Excellent - Virtually uncrackable with current technology",
             strength: "excellent"
         };
-    } else if (score >= 75 || entropy >= 80) {
+    } else if (entropy >= 80) {
         return { 
             rating: "Very Strong - Would take centuries to crack",
             strength: "very-strong"
         };
-    } else if (score >= 60 || entropy >= 60) {
+    } else if (entropy >= 60) {
         return { 
             rating: "Strong - Would take years to crack",
             strength: "strong"
         };
-    } else if (score >= 45 || entropy >= 45) {
+    } else if (entropy >= 45) {
         return { 
             rating: "Moderate - Could be cracked in months",
             strength: "moderate"
         };
-    } else if (score >= 30 || entropy >= 30) {
+    } else if (entropy >= 30) {
         return { 
             rating: "Weak - Could be cracked in days or weeks",
             strength: "weak"
