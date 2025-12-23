@@ -33,7 +33,10 @@ const ERROR_MESSAGES = {
     
     // AUTO-CORRECTION MESSAGES
     auto_set_num: "Number of Passwords has been set to 1 to allow password generation.",
-    auto_set_one: "Number of Passwords and Password Length have been set to 1."
+    auto_set_one: "Number of Passwords and Password Length have been set to 1.",
+    
+    // NEW: Message for auto-loading defaults
+    auto_load_defaults: "All fields were blank. Loaded default settings to allow password generation."
 };
 
 // --- CHARACTER SETS ---
@@ -278,25 +281,33 @@ function toggleDarkMode() {
 // Helper to check if inputs are completely blank/default
 function areInputsBlank() {
     // Check all text/number inputs. Ignoring checkboxes as they control behavior.
-    return ui.length.value.trim() === "" &&
-           ui.punctuation.value.trim() === "" &&
-           ui.digits.value.trim() === "" &&
-           ui.capitals.value.trim() === "" &&
-           ui.specificWord.value.trim() === "" &&
-           ui.numPasswords.value.trim() === "";
+    const allNumericInputsAreBlank = ui.length.value.trim() === "" || ui.length.value.trim() === "0" &&
+                                     ui.punctuation.value.trim() === "" || ui.punctuation.value.trim() === "0" &&
+                                     ui.digits.value.trim() === "" || ui.digits.value.trim() === "0" &&
+                                     ui.capitals.value.trim() === "" || ui.capitals.value.trim() === "0" &&
+                                     ui.numPasswords.value.trim() === "" || ui.numPasswords.value.trim() === "0";
+                                     
+    // Specific word can be non-empty, but we want to know if numeric fields are blank/zero
+    return allNumericInputsAreBlank && ui.specificWord.value.trim() === "";
 }
+
+// NEW: Helper function to load factory defaults
+function loadFactoryDefaults() {
+    ui.length.value = FACTORY_DEFAULTS.length;
+    ui.punctuation.value = FACTORY_DEFAULTS.punctuation;
+    ui.digits.value = FACTORY_DEFAULTS.digits;
+    ui.capitals.value = FACTORY_DEFAULTS.capitals;
+    ui.specificWord.value = FACTORY_DEFAULTS.specific_word;
+    ui.numPasswords.value = FACTORY_DEFAULTS.num_passwords;
+}
+
 
 function resetFieldsHandler() {
     const inputsAreBlank = areInputsBlank();
 
     if (inputsAreBlank) {
         // State 2: Load defaults
-        ui.length.value = FACTORY_DEFAULTS.length;
-        ui.punctuation.value = FACTORY_DEFAULTS.punctuation;
-        ui.digits.value = FACTORY_DEFAULTS.digits;
-        ui.capitals.value = FACTORY_DEFAULTS.capitals;
-        ui.specificWord.value = FACTORY_DEFAULTS.specific_word;
-        ui.numPasswords.value = FACTORY_DEFAULTS.num_passwords;
+        loadFactoryDefaults(); // Use helper function
         
         // Checkboxes are intentionally NOT reset here.
         updatePasswordList([]);
@@ -337,6 +348,11 @@ function showInfoHandler() {
 <div class="info-section">
     <strong>Reset Fields</strong>
     <p>Clears all input values. Press again to load default settings. Does not include checkboxes.</p>
+</div>
+
+<div class="info-section">
+    <strong>Auto-Default Loading (NEW)</strong>
+    <p>If you press **Create Password(s)** when all primary fields are empty/zero, the factory defaults will automatically load and generate passwords.</p>
 </div>
 
 <div class="info-section">
@@ -411,6 +427,33 @@ function generatePasswordHandler(showSuccessMessage = true) {
             throw new Error(`Specific word length exceeds maximum of ${MAX_SPECIFIC_WORD_LENGTH}.`);
         }
         
+        let requiresCorrection = false;
+        let correctionMessage = "";
+
+        // NEW: Check if all fields are blank/zero and auto-load defaults
+        const inputsAreBlankOrZero = (
+            ui.length.value.trim() === "" || ui.length.value.trim() === "0"
+        ) && (
+            ui.punctuation.value.trim() === "" || ui.punctuation.value.trim() === "0"
+        ) && (
+            ui.digits.value.trim() === "" || ui.digits.value.trim() === "0"
+        ) && (
+            ui.capitals.value.trim() === "" || ui.capitals.value.trim() === "0"
+        ) && (
+            ui.specificWord.value.trim() === ""
+        ) && (
+            ui.numPasswords.value.trim() === "" || ui.numPasswords.value.trim() === "0"
+        );
+        
+        if (inputsAreBlankOrZero) {
+            loadFactoryDefaults(); // Load defaults
+            requiresCorrection = true;
+            correctionMessage = ERROR_MESSAGES.auto_load_defaults;
+            // Re-read specificWord after loading defaults
+            specificWord = ui.specificWord.value.trim();
+        }
+
+
         // 1. Get auxiliary inputs and calculate minLen early
         const punct = getEntryValueFromText(ui.punctuation.value, 'punctuation', MAX_PASSWORDS);
         const digits = getEntryValueFromText(ui.digits.value, 'digits', MAX_PASSWORDS);
@@ -428,49 +471,54 @@ function generatePasswordHandler(showSuccessMessage = true) {
         const numPwRaw = ui.numPasswords.value.trim();
         let length, numPw;
         
+        // Re-check invalid state *after* the auto-default-load has run, if it did.
         const isLengthInvalid = lengthRaw === "" || lengthRaw === "0";
         const isNumPwInvalid = numPwRaw === "" || numPwRaw === "0";
         
-        let correctionMessage = "";
-        let requiresCorrection = false;
-        
-        // --- AUTO-CORRECTION LOGIC ---
+        // --- AUTO-CORRECTION LOGIC (runs *only* if not handled by auto-default-load) ---
 
-        // A. CORRECT 'Number of Passwords' (numPw)
+        // A. CORRECT 'Number of Passwords' (numPw) - only if not handled by auto-default-load
         if (isNumPwInvalid) {
             numPw = 1;
             ui.numPasswords.value = 1; // Update UI
-            requiresCorrection = true;
-            correctionMessage = ERROR_MESSAGES.auto_set_num;
+            if (!inputsAreBlankOrZero) {
+                requiresCorrection = true;
+                correctionMessage = ERROR_MESSAGES.auto_set_num;
+            }
         } else {
             // If not invalid, parse it.
             numPw = getEntryValueFromText(numPwRaw, 'num_passwords', MAX_PASSWORDS);
         }
         
-        // B. CORRECT 'Password Length' (length)
+        // B. CORRECT 'Password Length' (length) - only if not handled by auto-default-load
         if (isLengthInvalid) {
-            requiresCorrection = true;
+            if (!inputsAreBlankOrZero) {
+                requiresCorrection = true;
 
-            if (minLen > 0) {
-                // Case 1: Length is blank/zero, but requirements exist.
-                length = minLen;
-                ui.length.value = minLen; // Update UI
-                
-                // Prioritize the length correction message
-                correctionMessage = ERROR_MESSAGES.short_password(minLen); 
+                if (minLen > 0) {
+                    // Case 1: Length is blank/zero, but requirements exist.
+                    length = minLen;
+                    ui.length.value = minLen; // Update UI
+                    
+                    // Prioritize the length correction message
+                    correctionMessage = ERROR_MESSAGES.short_password(minLen); 
 
-            } else {
-                // Case 2: Length is blank/zero, AND no requirements. Set to 1.
-                length = 1;
-                ui.length.value = 1; // Update UI
-                
-                if (isNumPwInvalid) {
-                    // Case 2a: Both length and numPw were invalid. Show combined message.
-                    correctionMessage = ERROR_MESSAGES.auto_set_one;
                 } else {
-                    // Case 2b: Only length was invalid. 
-                    correctionMessage = ERROR_MESSAGES.short_password(1);
+                    // Case 2: Length is blank/zero, AND no requirements. Set to 1.
+                    length = 1;
+                    ui.length.value = 1; // Update UI
+                    
+                    if (isNumPwInvalid) {
+                        // Case 2a: Both length and numPw were invalid. Show combined message.
+                        correctionMessage = ERROR_MESSAGES.auto_set_one;
+                    } else {
+                        // Case 2b: Only length was invalid. 
+                        correctionMessage = ERROR_MESSAGES.short_password(1);
+                    }
                 }
+            } else {
+                // If auto-default-load ran, length and numPw are already set to defaults (14 and 1)
+                length = getEntryValueFromText(ui.length.value, 'length', MAX_PASSWORD_LENGTH);
             }
         } else {
             // If not invalid, parse it.
@@ -480,10 +528,12 @@ function generatePasswordHandler(showSuccessMessage = true) {
             if (length < minLen) {
                 length = minLen;
                 ui.length.value = minLen; // Update UI
-                requiresCorrection = true;
-                
-                // Prioritize the length correction message
-                correctionMessage = ERROR_MESSAGES.short_password(minLen);
+                if (!inputsAreBlankOrZero) {
+                    requiresCorrection = true;
+                    
+                    // Prioritize the length correction message
+                    correctionMessage = ERROR_MESSAGES.short_password(minLen);
+                }
             }
         }
         
@@ -491,6 +541,12 @@ function generatePasswordHandler(showSuccessMessage = true) {
         if (requiresCorrection) {
              showMessage(correctionMessage, 'warning');
              showSuccessMessage = false; // Prevent success message from overwriting warning
+        }
+        
+        // Ensure length and numPw are correctly set for generation after all logic
+        if (inputsAreBlankOrZero) {
+            length = FACTORY_DEFAULTS.length;
+            numPw = FACTORY_DEFAULTS.num_passwords;
         }
 
         // --- PASSWORD GENERATION ---
