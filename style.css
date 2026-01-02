@@ -55,10 +55,8 @@ body {
     font-family: Arial, sans-serif;
     background-color: var(--bg-color);
     color: var(--fg-color);
-    padding: 0; /* FIX: Removed body padding so background covers 100% height */
-    display: flex;
-    justify-content: center;
-    align-items: flex-start; /* Align content to the top */
+    padding: 0; 
+    /* LAYOUT FIX: Removed flex properties to ensure block elements stack and center correctly */
     transition: background-color 0.3s, color 0.3s;
 }
 
@@ -67,8 +65,8 @@ body {
     max-width: 900px;
     background-color: var(--container-bg);
     padding: 20px; 
-    /* FIX: Added margin to space the container from the edge, replacing body padding */
-    margin: 20px 10px; 
+    /* LAYOUT FIX: Used auto margins for horizontal centering and space from top/footer */
+    margin: 20px auto 10px auto; 
     border-radius: 8px;
     box-shadow: 0 4px 12px var(--shadow-color);
     transition: background-color 0.3s, box-shadow 0.3s;
@@ -493,6 +491,37 @@ body.dark-mode .message-area.evaluation-success {
     background-color: var(--select-bg);
 }
 
+/* --- Footer Styles --- */
+footer {
+    width: 100%;
+    max-width: 900px; /* Match the max-width of the container */
+    text-align: center;
+    padding: 0 20px; 
+    /* LAYOUT FIX: Used auto margins for horizontal centering and correct spacing */
+    margin: 5px auto 20px auto; 
+    font-size: 1.1em; /* INCREASED FONT SIZE */
+    color: var(--fg-color);
+    transition: color 0.3s;
+}
+
+footer p {
+    margin: 0;
+    padding: 0;
+}
+
+footer a {
+    color: var(--accent-color); /* Uses the themed accent color (Blue/Green) */
+    text-decoration: none;
+    font-weight: 700; /* Made link slightly bolder */
+    transition: color 0.3s;
+}
+
+footer a:hover {
+    text-decoration: underline;
+    /* Themed Hover: Darkens the accent color slightly for feedback in both light and dark mode */
+    color: color-mix(in srgb, var(--accent-color) 80%, black);
+}
+
 
 /* ======================================= */
 /* !!! CRITICAL MOBILE MEDIA QUERY FIXES !!! */
@@ -533,7 +562,7 @@ body.dark-mode .message-area.evaluation-success {
     /* 6. Ensure container padding is appropriate (FIXED) */
     .container {
         padding: 15px;
-        margin: 15px 10px; /* Adjusted margin for mobile */
+        margin: 15px 10px 10px 10px; /* Adjusted margin for mobile */
     }
     
     /* 7. Modal adjustments for mobile */
@@ -544,5 +573,12 @@ body.dark-mode .message-area.evaluation-success {
     
     .info-section {
         padding: 10px 12px;
+    }
+    
+    /* 8. Footer adjustment for mobile */
+    footer {
+        max-width: 100%; /* Allow footer to span full width (minus body margin) */
+        padding: 0 15px;
+        margin: 5px auto 20px auto;
     }
 }
