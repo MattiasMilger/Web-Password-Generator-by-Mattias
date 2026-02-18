@@ -258,28 +258,32 @@ button:disabled {
 
 /* --- Message Area --- */
 .message-area {
-    margin-bottom: 20px;
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 900px;
+    z-index: 1100;
     border-radius: 4px;
     font-weight: bold;
-    text-align: left; /* Changed from center for detailed messages */
-    box-sizing: border-box; 
-    min-height: 42px; 
-    padding: 10px 15px; 
-    line-height: 1.6; /* Increased for better readability */
-    display: block; /* Changed from flex for multi-line content */
-    border: 1px solid transparent; 
-    white-space: pre-wrap; /* Changed to preserve line breaks */
-    word-wrap: break-word; 
+    text-align: left;
+    padding: 10px 15px;
+    line-height: 1.6;
+    border: 1px solid transparent;
+    white-space: pre-wrap;
+    word-wrap: break-word;
     opacity: 1;
     visibility: visible;
     transition: opacity 0.3s, visibility 0.3s;
-    font-family: 'Consolas', 'Monaco', monospace; /* Monospace for better alignment */
+    font-family: 'Consolas', 'Monaco', monospace;
     font-size: 0.9em;
 }
 
-.message-area.hidden { 
-    opacity: 0; 
+.message-area.hidden {
+    opacity: 0;
     visibility: hidden;
+    pointer-events: none;
 }
 
 /* Message Colors (Light Mode) */
