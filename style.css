@@ -61,12 +61,13 @@ body {
 }
 
 .container {
+    position: relative;
     width: 100%;
     max-width: 900px;
     background-color: var(--container-bg);
-    padding: 20px; 
+    padding: 20px;
     /* LAYOUT FIX: Used auto margins for horizontal centering and space from top/footer */
-    margin: 20px auto 10px auto; 
+    margin: 20px auto 10px auto;
     border-radius: 8px;
     box-shadow: 0 4px 12px var(--shadow-color);
     transition: background-color 0.3s, box-shadow 0.3s;
@@ -258,14 +259,13 @@ button:disabled {
 
 /* --- Message Area --- */
 .message-area {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 900px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    min-height: 80px;
     z-index: 1100;
-    border-radius: 4px;
+    border-radius: 8px;
     font-weight: bold;
     text-align: left;
     padding: 10px 15px;
