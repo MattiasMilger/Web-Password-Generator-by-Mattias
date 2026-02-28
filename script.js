@@ -188,19 +188,21 @@ function createRandomCharacters(count, charSet, disambiguate) {
 }
 
 // NEW: Generate pronounceable password base
-function createPronounceableBase(length) {
+function createPronounceableBase(length, disambiguate) {
     const result = [];
     let useConsonant = Math.random() > 0.5; // Randomly start with consonant or vowel
-    
+
     while (result.length < length) {
-        if (useConsonant) {
-            result.push(secureChoice(DEFAULT_CHARSETS.consonants));
-        } else {
-            result.push(secureChoice(DEFAULT_CHARSETS.vowels));
+        const char = useConsonant
+            ? secureChoice(DEFAULT_CHARSETS.consonants)
+            : secureChoice(DEFAULT_CHARSETS.vowels);
+        if (disambiguate && AMBIGUOUS_CHARS.has(char)) {
+            continue;
         }
+        result.push(char);
         useConsonant = !useConsonant; // Alternate
     }
-    
+
     return result;
 }
 
@@ -218,8 +220,8 @@ function passwordCreation(length, numPunct, numDigits, numCapitals, specificWord
     
     // NEW: Pronounceable mode generates alternating consonant-vowel pattern
     if (pronounceable) {
-        charList = createPronounceableBase(numLowercase);
-        
+        charList = createPronounceableBase(numLowercase, disambiguateChars);
+
         // Add required capitals by capitalizing some letters
         for (let i = 0; i < numCapitals && i < charList.length; i++) {
             const buffer = new Uint32Array(1);
@@ -227,12 +229,12 @@ function passwordCreation(length, numPunct, numDigits, numCapitals, specificWord
             const randomIndex = Math.floor(buffer[0] / (0xffffffff + 1) * charList.length);
             charList[randomIndex] = charList[randomIndex].toUpperCase();
         }
-        
+
         // Add digits
-        charList.push(...createRandomCharacters(numDigits, DEFAULT_CHARSETS.digits, false));
-        
+        charList.push(...createRandomCharacters(numDigits, DEFAULT_CHARSETS.digits, disambiguateChars));
+
         // Add punctuation
-        charList.push(...createRandomCharacters(numPunct, punctuationSet, false));
+        charList.push(...createRandomCharacters(numPunct, punctuationSet, disambiguateChars));
         
         // Shuffle only the special characters (digits and punctuation) to distribute them
         const specialChars = charList.splice(numLowercase);
