@@ -223,11 +223,22 @@ function passwordCreation(length, numPunct, numDigits, numCapitals, specificWord
         charList = createPronounceableBase(numLowercase, disambiguateChars);
 
         // Add required capitals by capitalizing some letters
-        for (let i = 0; i < numCapitals && i < charList.length; i++) {
+        let capitalsAdded = 0;
+        let capitalAttempts = 0;
+        while (capitalsAdded < numCapitals && capitalAttempts < charList.length * 10) {
+            capitalAttempts++;
             const buffer = new Uint32Array(1);
             window.crypto.getRandomValues(buffer);
             const randomIndex = Math.floor(buffer[0] / (0xffffffff + 1) * charList.length);
-            charList[randomIndex] = charList[randomIndex].toUpperCase();
+            const upper = charList[randomIndex].toUpperCase();
+            if (disambiguateChars && AMBIGUOUS_CHARS.has(upper)) {
+                continue;
+            }
+            if (charList[randomIndex] === upper) {
+                continue; // already capitalized, try again
+            }
+            charList[randomIndex] = upper;
+            capitalsAdded++;
         }
 
         // Add digits
