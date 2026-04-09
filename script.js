@@ -364,7 +364,7 @@ function showInfoHandler() {
 </div>
 
 <div class="info-section">
-    <strong>Auto-Default Loading (NEW)</strong>
+    <strong>Auto-Default Loading</strong>
     <p>If you press **Create Password(s)** when all primary fields are empty/zero, the factory defaults will automatically load and generate passwords.</p>
 </div>
 
