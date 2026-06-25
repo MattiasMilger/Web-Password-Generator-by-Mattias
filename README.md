@@ -1,6 +1,6 @@
 # Web Password Generator by Mattias
 
-A browser-based password generator built with vanilla HTML, CSS, and JavaScript. Runs entirely client-side — no server or backend required. Designed for GitHub Pages.
+A browser-based password generator built with vanilla HTML, CSS, and JavaScript. Runs entirely client-side - no server or backend required. Designed for GitHub Pages.
 
 ## Try It Out
 
@@ -12,17 +12,17 @@ Open `index.html` in a modern browser. No build tools or dependencies required.
 
 ## Features
 
-- **Custom Password Length** — Generate passwords up to 500 characters long.
-- **Character Requirements** — Specify exact counts for punctuation, digits, capitals, and lowercase letters.
-- **Batch Generation** — Create up to 500 passwords at once.
-- **Word/Phrase Insertion** — Embed a custom word or phrase at a random position in each password.
-- **Pronounceable Mode** — Alternating consonant-vowel patterns for easier memorization.
-- **Disambiguate Mode** — Avoids confusing characters (I, l, 1, 0, O, o).
-- **Simple Punctuation Mode** — Restricts punctuation to basic symbols (!, ?, ., _, @).
-- **Password Strength Evaluator** — Entropy calculation, pattern detection, and detailed feedback.
-- **Copy to Clipboard** — Copy selected or all generated passwords.
-- **Dark / Light Theme** — Toggle between dark and light modes (dark by default).
-- **Responsive Design** — Works on desktop and mobile devices.
+- **Custom Password Length** - Generate passwords up to 500 characters long.
+- **Character Requirements** - Specify exact counts for punctuation, digits, capitals, and lowercase letters.
+- **Batch Generation** - Create up to 500 passwords at once.
+- **Word/Phrase Insertion** - Embed a custom word or phrase at a random position in each password.
+- **Pronounceable Mode** - Alternating consonant-vowel patterns for easier memorization.
+- **Disambiguate Mode** - Avoids confusing characters (I, l, 1, 0, O, o).
+- **Simple Punctuation Mode** - Restricts punctuation to basic symbols (!, ?, ., _, @).
+- **Password Strength Evaluator** - Entropy calculation, pattern detection, and detailed feedback.
+- **Copy to Clipboard** - Copy selected or all generated passwords.
+- **Dark / Light Theme** - Toggle between dark and light modes (dark by default).
+- **Responsive Design** - Works on desktop and mobile devices.
 
 ## Project Structure
 
@@ -54,10 +54,10 @@ Web Password Generator by Mattias/
 
 ## Technical Notes
 
-- **No external dependencies** — pure vanilla HTML, CSS, and JavaScript.
-- **Cryptographically secure** — Uses `window.crypto.getRandomValues()` with unbiased selection (no modulo bias).
-- **Client-side only** — No data is transmitted to any server. Passwords exist only in the browser DOM.
-- **Input validation** — Maximum limits enforced (500 chars, 500 quantity, 100 word length) with auto-correction.
+- **No external dependencies** - pure vanilla HTML, CSS, and JavaScript.
+- **Cryptographically secure** - Uses `window.crypto.getRandomValues()` with unbiased selection (no modulo bias).
+- **Client-side only** - No data is transmitted to any server. Passwords exist only in the browser DOM.
+- **Input validation** - Maximum limits enforced (500 chars, 500 quantity, 100 word length) with auto-correction.
 
 ## Browser Support
 
