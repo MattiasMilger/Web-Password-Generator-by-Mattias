@@ -220,7 +220,13 @@ function passwordCreation(length, numPunct, numDigits, numCapitals, specificWord
     
     // NEW: Pronounceable mode generates alternating consonant-vowel pattern
     if (pronounceable) {
-        charList = createPronounceableBase(numLowercase, disambiguateChars);
+        // Capitals in pronounceable mode are created by uppercasing letters that
+        // already exist in the base, rather than being appended as extra characters
+        // (as in the non-pronounceable branch below). So the base pool needs to
+        // include the capitals' share of the length budget too, or the final
+        // password ends up numCapitals characters short.
+        const numLetters = numLowercase + numCapitals;
+        charList = createPronounceableBase(numLetters, disambiguateChars);
 
         // Add required capitals by capitalizing some letters
         let capitalsAdded = 0;
@@ -248,7 +254,7 @@ function passwordCreation(length, numPunct, numDigits, numCapitals, specificWord
         charList.push(...createRandomCharacters(numPunct, punctuationSet, disambiguateChars));
         
         // Shuffle only the special characters (digits and punctuation) to distribute them
-        const specialChars = charList.splice(numLowercase);
+        const specialChars = charList.splice(numLetters);
         secureShuffle(specialChars);
         
         // Insert special characters at random positions
