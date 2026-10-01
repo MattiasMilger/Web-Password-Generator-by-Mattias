@@ -216,12 +216,11 @@ h1 {
     background-color: color-mix(in srgb, var(--accent-color) 80%, black);
 }
 
-#btn-clear, #btn-evaluate, #btn-copy-selected, #btn-copy-all {
+#btn-clear, #btn-copy-selected, #btn-copy-all {
     background-color: var(--button-bg);
     color: var(--fg-color);
 }
 #btn-clear:hover:not(:disabled),
-#btn-evaluate:hover:not(:disabled), 
 #btn-copy-selected:hover:not(:disabled),
 #btn-copy-all:hover:not(:disabled) {
     background-color: var(--select-bg);
@@ -308,27 +307,6 @@ button:disabled {
     border-color: var(--success-color);
 }
 
-/* Evaluation message types (same colors but semantic naming) */
-.message-area.evaluation-error { 
-    background-color: color-mix(in srgb, var(--error-color) 10%, white); 
-    color: var(--error-color); 
-    border-color: var(--error-color);
-}
-.message-area.evaluation-warning { 
-    background-color: color-mix(in srgb, var(--warning-color) 10%, white); 
-    color: var(--warning-color); 
-    border-color: var(--warning-color);
-}
-.message-area.evaluation-info { 
-    background-color: color-mix(in srgb, var(--info-color) 10%, white); 
-    color: var(--info-color); 
-    border-color: var(--info-color);
-}
-.message-area.evaluation-success { 
-    background-color: color-mix(in srgb, var(--success-color) 10%, white); 
-    color: var(--success-color); 
-    border-color: var(--success-color);
-}
 
 /* Message Colors (Dark Mode) */
 body.dark-mode .message-area.error { 
@@ -352,27 +330,6 @@ body.dark-mode .message-area.success {
     border-color: var(--success-color);
 }
 
-/* Evaluation message types for dark mode */
-body.dark-mode .message-area.evaluation-error { 
-    background-color: color-mix(in srgb, var(--error-color) 20%, black); 
-    color: var(--error-color); 
-    border-color: var(--error-color);
-}
-body.dark-mode .message-area.evaluation-warning { 
-    background-color: color-mix(in srgb, var(--warning-color) 20%, black); 
-    color: var(--warning-color); 
-    border-color: var(--warning-color);
-}
-body.dark-mode .message-area.evaluation-info { 
-    background-color: color-mix(in srgb, var(--info-color) 20%, black); 
-    color: var(--info-color); 
-    border-color: var(--info-color);
-}
-body.dark-mode .message-area.evaluation-success { 
-    background-color: color-mix(in srgb, var(--success-color) 20%, black); 
-    color: var(--success-color); 
-    border-color: var(--success-color);
-}
 
 /* --- Modal Styles (For Info Popup) --- */
 .modal {

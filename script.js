@@ -21,7 +21,6 @@ const ERROR_MESSAGES = {
     short_password: (min) => `Password length has been increased to ${min} to meet the requirements.`,
     max_password_length: `Maximum password length is ${MAX_PASSWORD_LENGTH}.`,
     max_passwords: `Maximum number of passwords allowed is ${MAX_PASSWORDS}.`,
-    no_password_selected: "Please select a password from the list to evaluate its strength.",
     
     // Keeping these generic errors in case non-blank, non-numeric values are entered.
     positive_length: "Password length must be a positive whole number.",
@@ -66,7 +65,6 @@ const ui = {
     pronounceable: document.getElementById('pronounceable-check'),
     btnCreate: document.getElementById('btn-create'),
     btnClear: document.getElementById('btn-clear'), 
-    btnEvaluate: document.getElementById('btn-evaluate'),
     btnCopySelected: document.getElementById('btn-copy-selected'),
     btnCopyAll: document.getElementById('btn-copy-all'),
     btnToggleTheme: document.getElementById('btn-toggle-theme'),
@@ -89,13 +87,9 @@ function showMessage(message, type = 'error') {
         clearTimeout(ui.messageArea.timeoutId);
     }
     
-    // Only set timeout for non-evaluation messages
-    if (!type.startsWith('evaluation-')) {
-        ui.messageArea.timeoutId = setTimeout(() => {
-            ui.messageArea.classList.add('hidden');
-        }, 5000);
-    }
-    // Evaluation messages stay until something else is shown
+    ui.messageArea.timeoutId = setTimeout(() => {
+        ui.messageArea.classList.add('hidden');
+    }, 5000);
 }
 
 function secureChoice(charSet) {
@@ -398,11 +392,6 @@ function showInfoHandler() {
     <strong>Pronounceable Mode</strong>
     <p>Creates passwords using alternating consonants and vowels, making them easier to remember and type while maintaining security (e.g., "Ta2ko!Liv4").</p>
 </div>
-
-<div class="info-section">
-    <strong>Evaluate Password</strong>
-    <p>Analyzes password strength using advanced detection for patterns, common words, keyboard sequences, dates, and more. Shows detailed feedback on vulnerabilities and strengths.</p>
-</div>
 `;
 
     ui.infoText.innerHTML = infoContent;
@@ -415,7 +404,6 @@ function closeInfoModal() {
 
 function updatePasswordList(passwords) {
     ui.passwordsSelect.innerHTML = '';
-    ui.btnEvaluate.disabled = true;
     ui.btnCopySelected.disabled = true;
     ui.btnCopyAll.disabled = true;
 
@@ -432,7 +420,6 @@ function updatePasswordList(passwords) {
 
     ui.passwordsSelect.options[0].selected = true;
 
-    ui.btnEvaluate.disabled = false;
     ui.btnCopySelected.disabled = false;
     ui.btnCopyAll.disabled = false;
     
@@ -592,34 +579,6 @@ function generatePasswordHandler(showSuccessMessage = true) {
     }
 }
 
-function evaluateSelectedPasswordHandler() {
-    const selectedOptions = Array.from(ui.passwordsSelect.selectedOptions);
-    if (selectedOptions.length === 0) {
-        showMessage(ERROR_MESSAGES.no_password_selected, 'warning');
-        return;
-    }
-
-    const password = selectedOptions[0].value;
-    
-    // Use the advanced evaluator from password-strength.js
-    const result = evaluatePasswordStrength(password);
-    const evaluationMessage = formatEvaluationMessage(result);
-    
-    // Determine message type based on strength - use 'evaluation' type for longer display
-    let messageType = 'evaluation';
-    if (result.strength === 'excellent' || result.strength === 'very-strong') {
-        messageType = 'evaluation-success';
-    } else if (result.strength === 'strong' || result.strength === 'moderate') {
-        messageType = 'evaluation-info';
-    } else if (result.strength === 'weak') {
-        messageType = 'evaluation-warning';
-    } else {
-        messageType = 'evaluation-error';
-    }
-    
-    showMessage(evaluationMessage, messageType);
-}
-
 function copyToClipboardHandler(copySelected) {
     let textToCopy = '';
     
@@ -663,7 +622,6 @@ function handleEnterKey(event) {
 // --- EVENT LISTENERS ---
 ui.btnCreate.addEventListener('click', generatePasswordHandler);
 ui.btnClear.addEventListener('click', resetFieldsHandler); 
-ui.btnEvaluate.addEventListener('click', evaluateSelectedPasswordHandler);
 ui.btnToggleTheme.addEventListener('click', toggleDarkMode);
 ui.btnShowInfo.addEventListener('click', showInfoHandler);
 
@@ -690,7 +648,6 @@ window.addEventListener('keydown', (event) => {
 // Update button state on selection change
 ui.passwordsSelect.addEventListener('change', () => {
     const hasSelection = ui.passwordsSelect.selectedOptions.length > 0;
-    ui.btnEvaluate.disabled = !hasSelection;
     ui.btnCopySelected.disabled = !hasSelection;
 });
 
