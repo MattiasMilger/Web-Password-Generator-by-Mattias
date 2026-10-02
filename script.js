@@ -651,6 +651,16 @@ ui.passwordsSelect.addEventListener('change', () => {
     ui.btnCopySelected.disabled = !hasSelection;
 });
 
+// Mobile/touch: single-select only. Desktop keeps multi-select.
+const touchQuery = window.matchMedia('(pointer: coarse)');
+
+function updateSelectMode() {
+    ui.passwordsSelect.multiple = !touchQuery.matches;
+}
+
+updateSelectMode();
+touchQuery.addEventListener('change', updateSelectMode);
+
 ui.btnCopySelected.addEventListener('click', () => copyToClipboardHandler(true));
 ui.btnCopyAll.addEventListener('click', () => copyToClipboardHandler(false));
 
