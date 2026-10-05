@@ -21,6 +21,7 @@ Open `index.html` in a modern browser. No build tools or dependencies required.
 - **Simple Punctuation Mode** - Restricts punctuation to basic symbols (!, ?, ., _, @).
 - **Copy to Clipboard** - Copy selected or all generated passwords.
 - **Dark / Light Theme** - Toggle between dark and light modes (dark by default).
+- **Help & Info Dialog** - Detailed feature explanations and maximum limits (with centered close button, closable by clicking the background, pressing Escape, or clicking the close button).
 - **Responsive Design** - Works on desktop and mobile devices.
 
 ## Project Structure
@@ -37,7 +38,7 @@ Web Password Generator by Mattias/
 
 | Module | Purpose |
 |---|---|
-| `script.js` | Password generation (regular + pronounceable), character shuffling, input validation, clipboard, theme toggle, UI control |
+| `script.js` | Password generation (regular + pronounceable), character shuffling, input validation, clipboard, theme toggle, modal handling, UI control |
 
 ## How It Works
 

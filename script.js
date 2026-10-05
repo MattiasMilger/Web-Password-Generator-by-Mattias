@@ -294,17 +294,17 @@ function toggleDarkMode() {
 // Helper to check if inputs are completely blank/default
 function areInputsBlank() {
     // Check all text/number inputs. Ignoring checkboxes as they control behavior.
-    const allNumericInputsAreBlank = ui.length.value.trim() === "" || ui.length.value.trim() === "0" &&
-                                     ui.punctuation.value.trim() === "" || ui.punctuation.value.trim() === "0" &&
-                                     ui.digits.value.trim() === "" || ui.digits.value.trim() === "0" &&
-                                     ui.capitals.value.trim() === "" || ui.capitals.value.trim() === "0" &&
-                                     ui.numPasswords.value.trim() === "" || ui.numPasswords.value.trim() === "0";
+    const allNumericInputsAreBlank = (ui.length.value.trim() === "" || ui.length.value.trim() === "0") &&
+                                     (ui.punctuation.value.trim() === "" || ui.punctuation.value.trim() === "0") &&
+                                     (ui.digits.value.trim() === "" || ui.digits.value.trim() === "0") &&
+                                     (ui.capitals.value.trim() === "" || ui.capitals.value.trim() === "0") &&
+                                     (ui.numPasswords.value.trim() === "" || ui.numPasswords.value.trim() === "0");
                                      
     // Specific word can be non-empty, but we want to know if numeric fields are blank/zero
     return allNumericInputsAreBlank && ui.specificWord.value.trim() === "";
 }
 
-// NEW: Helper function to load factory defaults
+// Helper function to load factory defaults
 function loadFactoryDefaults() {
     ui.length.value = FACTORY_DEFAULTS.length;
     ui.punctuation.value = FACTORY_DEFAULTS.punctuation;
@@ -314,13 +314,12 @@ function loadFactoryDefaults() {
     ui.numPasswords.value = FACTORY_DEFAULTS.num_passwords;
 }
 
-
 function resetFieldsHandler() {
     const inputsAreBlank = areInputsBlank();
 
     if (inputsAreBlank) {
         // State 2: Load defaults
-        loadFactoryDefaults(); // Use helper function
+        loadFactoryDefaults();
         
         // Checkboxes are intentionally NOT reset here.
         updatePasswordList([]);
@@ -422,8 +421,6 @@ function updatePasswordList(passwords) {
 
     ui.btnCopySelected.disabled = false;
     ui.btnCopyAll.disabled = false;
-    
-    // Message is intentionally NOT hidden here to allow the warning to persist.
 }
 
 function generatePasswordHandler(showSuccessMessage = true) {
@@ -436,7 +433,7 @@ function generatePasswordHandler(showSuccessMessage = true) {
         let requiresCorrection = false;
         let correctionMessage = "";
 
-        // NEW: Check if all fields are blank/zero and auto-load defaults
+        // Check if all fields are blank/zero and auto-load defaults
         const inputsAreBlankOrZero = (
             ui.length.value.trim() === "" || ui.length.value.trim() === "0"
         ) && (
@@ -458,7 +455,6 @@ function generatePasswordHandler(showSuccessMessage = true) {
             // Re-read specificWord after loading defaults
             specificWord = ui.specificWord.value.trim();
         }
-
 
         // 1. Get auxiliary inputs and calculate minLen early
         const punct = getEntryValueFromText(ui.punctuation.value, 'punctuation', MAX_PASSWORDS);
@@ -611,7 +607,7 @@ function copyToClipboardHandler(copySelected) {
     }
 }
 
-// NEW: Handler for Enter key press
+// Handler for Enter key press
 function handleEnterKey(event) {
     if (event.key === 'Enter') {
         event.preventDefault();
@@ -637,8 +633,17 @@ function addInputRestrictions() {
 }
 addInputRestrictions();
 
-// Close modal on click/key
+// Close modal on click of close buttons
 ui.closeButtons.forEach(btn => btn.addEventListener('click', closeInfoModal));
+
+// Close modal when clicking background (backdrop)
+ui.infoModal.addEventListener('click', (event) => {
+    if (event.target === ui.infoModal) {
+        closeInfoModal();
+    }
+});
+
+// Close modal on Escape key
 window.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && !ui.infoModal.classList.contains('hidden')) {
         closeInfoModal();

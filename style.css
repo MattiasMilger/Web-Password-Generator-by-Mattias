@@ -438,15 +438,19 @@ body.dark-mode .message-area.success {
     cursor: pointer;
 }
 
+/* Centered close button in info menu */
 .modal-close-button {
-    margin-top: 15px;
-    padding: 10px 20px;
+    display: block;
+    margin: 20px auto 0 auto;
+    padding: 10px 30px;
     background-color: var(--button-bg);
     color: var(--fg-color);
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    float: right;
+    font-weight: bold;
+    text-align: center;
+    transition: background-color 0.2s, color 0.2s;
 }
 .modal-close-button:hover {
     background-color: var(--select-bg);
