@@ -60,6 +60,12 @@ Web Password Generator by Mattias/
 
 Works in all modern browsers (Chrome, Firefox, Edge, Safari). Requires JavaScript enabled.
 
+## Credits
+
+**Developer**: Mattias Milger
+**Email**: mattias.r.milger@gmail.com
+**GitHub**: [MattiasMilger](https://github.com/MattiasMilger)
+
 ## More Projects
 
 Check out more of my work at [mattiasmilger.github.io](https://mattiasmilger.github.io/)
