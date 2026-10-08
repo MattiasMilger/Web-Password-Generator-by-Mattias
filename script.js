@@ -78,6 +78,10 @@ const ui = {
 
 // --- HELPER FUNCTIONS ---
 
+// How long notification messages stay visible (milliseconds)
+const MESSAGE_DURATION_SHORT = 2000; // success / info
+const MESSAGE_DURATION_LONG = 3500;  // warning / error
+
 function showMessage(message, type = 'error') {
     ui.messageArea.textContent = message;
     ui.messageArea.className = `message-area ${type}`;
@@ -87,9 +91,11 @@ function showMessage(message, type = 'error') {
         clearTimeout(ui.messageArea.timeoutId);
     }
     
+    // Quick confirmations vanish fast; warnings/errors stay a bit longer so they can be read
+    const duration = (type === 'success' || type === 'info') ? MESSAGE_DURATION_SHORT : MESSAGE_DURATION_LONG;
     ui.messageArea.timeoutId = setTimeout(() => {
         ui.messageArea.classList.add('hidden');
-    }, 5000);
+    }, duration);
 }
 
 function secureChoice(charSet) {
